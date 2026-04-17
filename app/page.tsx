@@ -27,9 +27,19 @@ export default function TashrifApp() {
   const [selectedVerb, setSelectedVerb] = useState<Verb | null>(null);
   const [verbs, setVerbs] = useState<Verb[]>([]);
   const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') === 'dark';
+    }
+    return false;
+  });
   
   // Quiz State
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+
+  useEffect(() => {
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
   useEffect(() => {
     const init = async () => {
@@ -76,7 +86,10 @@ export default function TashrifApp() {
   if (loading) return <div className="h-screen flex items-center justify-center bg-stone-50 text-xs font-bold uppercase tracking-widest text-text-muted">Inisialisasi Leksikon...</div>;
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto bg-stone-50 overflow-hidden relative shadow-2xl">
+    <div className={cn(
+      "flex flex-col h-screen max-w-md mx-auto overflow-hidden relative shadow-2xl transition-colors duration-300",
+      darkMode ? "dark bg-dark-bg" : "bg-stone-50"
+    )}>
       <Header 
         activeTab={activeTab} 
         searchQuery={searchQuery} 
@@ -84,7 +97,10 @@ export default function TashrifApp() {
       />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto px-6 py-6 pb-24 bg-[#F3F4F6]">
+      <main className={cn(
+        "flex-1 overflow-y-auto px-6 py-6 pb-24 transition-colors duration-300",
+        darkMode ? "bg-dark-bg" : "bg-[#F3F4F6]"
+      )}>
         <AnimatePresence mode="wait">
           {activeTab === 'home' && (
             <HomeView 
@@ -113,7 +129,11 @@ export default function TashrifApp() {
           )}
 
           {activeTab === 'settings' && (
-            <SettingsView onBack={() => setActiveTab('home')} />
+            <SettingsView 
+              onBack={() => setActiveTab('home')} 
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
+            />
           )}
 
           {activeTab === 'access' && (
@@ -123,7 +143,10 @@ export default function TashrifApp() {
       </main>
 
       {/* Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-border px-8 py-3 flex items-center justify-between z-30 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+      <nav className={cn(
+        "fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t px-8 py-3 flex items-center justify-between z-30 transition-colors duration-300",
+        darkMode ? "bg-dark-card border-dark-border shadow-[0_-4px_12px_rgba(0,0,0,0.2)]" : "bg-white border-border shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
+      )}>
         <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={<History />} label="Koleksi" />
         <NavButton active={activeTab === 'learn'} onClick={() => setActiveTab('learn')} icon={<BookOpen />} label="Mesin" />
         <div className="relative -top-5">

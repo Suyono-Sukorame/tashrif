@@ -4,7 +4,28 @@
  * In a real-world scenario, this would handle complex morphophonological rules.
  */
 
-export type Tense = 'past' | 'present' | 'present_manshub' | 'present_majzum' | 'imperative' | 'future';
+export type Tense = 'past' | 'present' | 'present_manshub' | 'present_majzum' | 'imperative' | 'future' | 'ishtilahy';
+
+export interface IshtilahyResult {
+  title: string;
+  value: string;
+  type: string;
+}
+
+/**
+ * Generates horizontal summary (Tashrif Ishtilahy)
+ */
+export function getIshtilahy(verb: any): IshtilahyResult[] {
+  return [
+    { title: 'Madhi', value: verb.past, type: 'past' },
+    { title: 'Mudhari', value: verb.present, type: 'present' },
+    { title: 'Masdar', value: verb.masdar || '-', type: 'masdar' },
+    { title: 'Fail', value: verb.activeParticiple || '-', type: 'activeParticiple' },
+    { title: 'Maf\'ul', value: verb.passiveParticiple || '-', type: 'passiveParticiple' },
+    { title: 'Amr', value: verb.past ? conjugate(verb.past, verb.present, 'imperative')[6].value : '-', type: 'imperative' },
+    { title: 'Makan/Zaman', value: verb.nounPlaceTime || '-', type: 'nounPlaceTime' },
+  ];
+}
 
 export interface ConjugationPart {
   text: string;

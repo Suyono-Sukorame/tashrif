@@ -25,31 +25,31 @@ export const HomeView = ({ searchQuery, setSearchQuery, verbs, handleVerbSelect,
       className="space-y-6"
     >
       <section className="grid grid-cols-2 gap-4">
-        <Card className="p-4 bg-white border-border">
+        <Card className="p-4 bg-white dark:bg-dark-card border-border dark:border-dark-border">
           <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Indeks Penguasaan</span>
+            <TrendingUp className="w-4 h-4 text-primary dark:text-emerald-400" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted dark:text-slate-400">Indeks Penguasaan</span>
           </div>
-          <div className="text-2xl font-bold text-text-dark">84%</div>
-          <div className="text-[10px] text-text-muted">+5.2% drift sesi</div>
+          <div className="text-2xl font-bold text-text-dark dark:text-dark-text">84%</div>
+          <div className="text-[10px] text-text-muted dark:text-slate-500">+5.2% drift sesi</div>
         </Card>
-        <Card className="p-4 bg-white border-border">
+        <Card className="p-4 bg-white dark:bg-dark-card border-border dark:border-dark-border">
           <div className="flex items-center gap-2 mb-1">
-            <Award className="w-4 h-4 text-accent" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Perpustakaan Kata</span>
+            <Award className="w-4 h-4 text-accent dark:text-orange-400" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted dark:text-slate-400">Perpustakaan Kata</span>
           </div>
-          <div className="text-2xl font-bold text-text-dark">1,480</div>
-          <div className="text-[10px] text-text-muted">Level 5 Tercapai</div>
+          <div className="text-2xl font-bold text-text-dark dark:text-dark-text">1,480</div>
+          <div className="text-[10px] text-text-muted dark:text-slate-500">Level 5 Tercapai</div>
         </Card>
       </section>
 
       <section>
         <div className="flex items-center justify-between mb-3 ltr-text px-1">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-text-muted" />
-            <h2 className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Registri Kata Kerja</h2>
+            <Clock className="w-4 h-4 text-text-muted dark:text-slate-400" />
+            <h2 className="text-[11px] font-bold text-text-muted dark:text-slate-400 uppercase tracking-wider">Registri Kata Kerja</h2>
           </div>
-          <Button variant="ghost" className="text-[11px] font-bold text-primary px-2 py-1">Ekspor Data</Button>
+          <Button variant="ghost" className="text-[11px] font-bold text-primary dark:text-emerald-400 px-2 py-1">Ekspor Data</Button>
         </div>
         <div className="grid grid-cols-1 gap-2">
           {verbs.filter(v => v.past.includes(searchQuery) || v.translationId.includes(searchQuery)).map((verb) => (

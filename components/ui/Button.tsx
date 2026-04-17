@@ -13,8 +13,8 @@ interface ButtonProps {
 export const Button = ({ children, onClick, variant = 'primary', className, disabled, type = 'button' }: ButtonProps) => {
   const variants = {
     primary: 'bg-primary text-white hover:bg-primary/95',
-    secondary: 'bg-primary-light text-primary hover:bg-emerald-100',
-    ghost: 'bg-transparent text-text-muted hover:bg-stone-100',
+    secondary: 'bg-primary-light text-primary hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-400',
+    ghost: 'bg-transparent text-text-muted hover:bg-stone-100 dark:hover:bg-dark-card dark:text-dark-text',
     accent: 'bg-accent text-white hover:bg-accent/90',
   };
 

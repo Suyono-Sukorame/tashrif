@@ -1,13 +1,25 @@
 import Dexie, { type Table } from 'dexie';
 
+export interface Example {
+  ar: string;
+  id: string;
+}
+
 export interface Verb {
   id?: number;
   root: string; // e.g. و-ق-ع
-  past: string; // e.g. وقع
-  present: string; // e.g. يقع
-  wazan: string; // e.g. فعل - يفعل
+  past: string; // e.g. وَقَعَ
+  present: string; // e.g. يَقَعُ
+  masdar?: string; // e.g. وُقُوْعًا
+  activeParticiple?: string; // Isim Fail
+  passiveParticiple?: string; // Isim Maf'ul
+  nounPlaceTime?: string; // Isim Makan/Zaman
+  toolNoun?: string; // Isim Alah
+  wazan: string; 
   type: 'shahih' | 'mithal' | 'ajwaf' | 'naqis' | 'lafif';
+  isMazid?: boolean;
   translationId: string;
+  examples?: Example[];
   isFavorite: boolean;
   createdAt: number;
 }
@@ -53,9 +65,17 @@ export const seedVerbs = async () => {
         root: 'و-ق-ع',
         past: 'وَقَعَ',
         present: 'يَقَعُ',
+        masdar: 'وُقُوعًا',
+        activeParticiple: 'وَاقِع',
+        passiveParticiple: 'مَوْقُوع',
+        nounPlaceTime: 'مَوْقِع',
         wazan: 'فَعَلَ - يَفْعَلُ',
         type: 'mithal',
         translationId: 'jatuh / terletak',
+        examples: [
+          { ar: 'وَقَعَ الكِتَابُ عَلَى السَّجَّادَةِ', id: 'Buku itu jatuh di atas karpet' },
+          { ar: 'قَلْبُ المَدِينَةِ يَقَعُ هُنَا', id: 'Pusat kota terletak di sini' }
+        ],
         isFavorite: true,
         createdAt: Date.now()
       },
@@ -63,19 +83,34 @@ export const seedVerbs = async () => {
         root: 'ك-ت-ب',
         past: 'كَتَبَ',
         present: 'يَكْتُبُ',
+        masdar: 'كِتَابَةً',
+        activeParticiple: 'كَاتِب',
+        passiveParticiple: 'مَكْتُوب',
+        nounPlaceTime: 'مَكْتَب',
+        toolNoun: 'مِكْتَب',
         wazan: 'فَعَلَ - يَفْعُلُ',
         type: 'shahih',
         translationId: 'menulis',
+        examples: [
+          { ar: 'كَتَبَ الطَّالِبُ الدَّرْسَ', id: 'Siswa itu menulis pelajaran' }
+        ],
         isFavorite: false,
         createdAt: Date.now()
       },
       {
-        root: 'ق-ا-ل',
-        past: 'قَالَ',
-        present: 'يَقُولُ',
-        wazan: 'فَعَلَ - يَفْعُلُ',
-        type: 'ajwaf',
-        translationId: 'berkata',
+        root: 'ع-ل-م',
+        past: 'عَلَّمَ',
+        present: 'يُعَلِّمُ',
+        masdar: 'تَعْلِيْمًا',
+        activeParticiple: 'مُعَلِّم',
+        passiveParticiple: 'مُعَلَّم',
+        wazan: 'فَعَّلَ - يُفَعِّلُ',
+        type: 'shahih',
+        isMazid: true,
+        translationId: 'mengajar',
+        examples: [
+          { ar: 'يُعَلِّمُ الأُسْتَاذُ اللُّغَةَ العَرَبِيَّةَ', id: 'Ustadz mengajar bahasa Arab' }
+        ],
         isFavorite: false,
         createdAt: Date.now()
       }
