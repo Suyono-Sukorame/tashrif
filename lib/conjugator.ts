@@ -6,11 +6,17 @@
 
 export type Tense = 'past' | 'present' | 'present_manshub' | 'present_majzum' | 'imperative' | 'future';
 
+export interface ConjugationPart {
+  text: string;
+  type: 'prefix' | 'root' | 'suffix';
+}
+
 export interface ConjugationResult {
   dhamir: string;
   pronoun: string;
   value: string;
   translation: string;
+  parts: ConjugationPart[];
 }
 
 export const DHAMIRS = [
@@ -35,63 +41,64 @@ export const DHAMIRS = [
  * Handles Shahih, and some Mithal (like waqa'a)
  */
 export function conjugate(past: string, present: string, tense: Tense): ConjugationResult[] {
-  // Stripping harakat for logical processing (simplified)
-  // In a full enterprise engine, we'd use a more sophisticated approach
-  
   const results: ConjugationResult[] = [];
 
-  // Logic for 'WAQA'A - YAQAU' (Mithal)
-  const isMithalWaw = past.startsWith('وَ');
   const basePast = past; // e.g. وَقَعَ
   const basePresent = present; // e.g. يَقَعُ
   
   DHAMIRS.forEach((d, index) => {
     let result = '';
+    const parts: ConjugationPart[] = [];
     
     if (tense === 'past') {
-      // Basic Past Conjugation Rules
-      const roots = basePast.replace(/[َُِّْ]/g, ''); // Simplified root extraction
-      const char1 = basePast[0];
-      const char2 = basePast[2]; // Simplified mapping
-      const char3 = basePast[4];
-      
       const suffixes = [
         'َ', 'َا', 'ُوا', 'َتْ', 'َتَا', 'ْنَ', 
         'ْتَ', 'ْتُمَا', 'ْتُمْ', 'ْتِ', 'ْتُمَا', 'ْتُنَّ', 
         'ْتُ', 'ْنَا'
       ];
       
-      // Handle the "sukun" on the 3rd root letter for some dhamirs
-      if (index >= 5) { // From Hunna onwards
-         // Strip the last harakah and add sukun then suffix
-         const stem = basePast.slice(0, -1) + 'ْ';
-         result = stem + suffixes[index];
-      } else {
-         result = basePast.slice(0, -1) + suffixes[index];
-      }
+      const stemText = index >= 5 ? basePast.slice(0, -1) + 'ْ' : basePast.slice(0, -1);
+      const suffixText = suffixes[index];
+      result = stemText + suffixText;
+
+      parts.push({ text: stemText, type: 'root' });
+      if (suffixText) parts.push({ text: suffixText, type: 'suffix' });
+
     } else if (tense === 'present') {
       const prefixes = ['يَ', 'يَ', 'يَ', 'تَ', 'تَ', 'يَ', 'تَ', 'تَ', 'تَ', 'تَ', 'تَ', 'تَ', 'أَ', 'نَ'];
       const suffixes = ['', 'انِ', 'ونَ', '', 'انِ', 'نَ', '', 'انِ', 'ونَ', 'ينَ', 'انِ', 'نَ', '', ''];
       
-      // Present stem usually removes 'Ya' from base present
-      const stem = basePresent.substring(1, basePresent.length - 1); 
-      result = prefixes[index] + stem + (suffixes[index] || 'ُ');
+      const prefixText = prefixes[index];
+      const stemText = basePresent.substring(1, basePresent.length - 1); 
+      const suffixText = (suffixes[index] || 'ُ');
+      result = prefixText + stemText + suffixText;
+
+      parts.push({ text: prefixText, type: 'prefix' });
+      parts.push({ text: stemText, type: 'root' });
+      parts.push({ text: suffixText, type: 'suffix' });
+
     } else if (tense === 'future') {
-       // Just add 'لن' (lan) - though lan changes target to manshub
-       // For simple UI, we prefix 'سَوْفَ' or 'سَـ'
        const presentForms = conjugate(past, present, 'present');
-       result = 'سَـ' + presentForms[index].value;
+       const p = presentForms[index];
+       result = 'سَـ' + p.value;
+       parts.push({ text: 'سَـ', type: 'prefix' });
+       parts.push(...p.parts);
+
     } else if (tense === 'imperative') {
-       // Only for Anta, Antuma, Antum, Anti, Antunna
-       const antaIndex = 6;
        if (index >= 6 && index <= 11) {
-          const stem = basePresent.substring(2, basePresent.length - 1); // e.g. قَع
+          const stemText = basePresent.substring(2, basePresent.length - 1); 
           const impSuffixes = ['', 'ا', 'وا', 'ي', 'ا', 'ن'];
-          result = stem + 'ْ' + impSuffixes[index - 6];
-          // Remove redundant sukun if vowel is there
+          const suffixText = 'ْ' + impSuffixes[index - 6];
+          const raw = stemText + suffixText;
+          result = raw.replace('ْا', 'ا').replace('ْوا', 'وا').replace('ْي', 'y').replace('ْن', 'n');
+          result = stemText + 'ْ' + impSuffixes[index - 6];
           result = result.replace('ْا', 'ا').replace('ْوا', 'وا').replace('ْي', 'ي').replace('ْن', 'ن');
+          
+          parts.push({ text: stemText, type: 'root' });
+          parts.push({ text: result.replace(stemText, ''), type: 'suffix' });
        } else {
           result = '-';
+          parts.push({ text: '-', type: 'root' });
        }
     }
 
@@ -99,7 +106,8 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
       dhamir: d.ar,
       pronoun: d.en,
       value: result,
-      translation: '' // Can be populated later
+      translation: '',
+      parts: parts
     });
   });
 

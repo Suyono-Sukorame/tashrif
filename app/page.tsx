@@ -40,7 +40,7 @@ const Button = ({ children, onClick, variant = 'primary', className, disabled, t
 // --- Main App ---
 
 export default function TashrifApp() {
-  const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'ai' | 'settings' | 'quiz'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'ai' | 'settings' | 'quiz' | 'guide'>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVerb, setSelectedVerb] = useState<Verb | null>(null);
   const [verbs, setVerbs] = useState<Verb[]>([]);
@@ -48,6 +48,7 @@ export default function TashrifApp() {
   
   // Quiz State
   const [quizScore, setQuizScore] = useState(0);
+  const [quizQuestions, setQuizQuestions] = useState<{q: string, options: string[], correct: string}[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -64,7 +65,30 @@ export default function TashrifApp() {
     setActiveTab('learn');
   };
 
-  const startQuiz = () => {
+  const startQuiz = (verb: Verb) => {
+    // Generate Dynamic Questions in Event Handler
+    const madi = conjugate(verb.past, verb.present, 'past');
+    const mudhari = conjugate(verb.past, verb.present, 'present');
+    const amr = conjugate(verb.past, verb.present, 'imperative').filter(x => x.value !== '-');
+    
+    const genQuestions = [
+      { 
+        q: `Manakah bentuk Madi (Lampau) untuk '${DHAMIRS[6].ar}' (${DHAMIRS[6].en})?`, 
+        options: [madi[6].value, madi[0].value, mudhari[6].value, 'قَائِل'].sort(() => Math.random() - 0.5),
+        correct: madi[6].value 
+      },
+      { 
+        q: `Manakah bentuk Mudhari' (Sekarang) untuk '${DHAMIRS[13].ar}' (${DHAMIRS[13].en})?`, 
+        options: [mudhari[13].value, mudhari[0].value, madi[13].value, 'نَقَعَ'].sort(() => Math.random() - 0.5),
+        correct: mudhari[13].value 
+      },
+      { 
+        q: amr.length > 0 ? `Bentuk Amr (Perintah) untuk '${DHAMIRS[6].ar}' adalah?` : `Apa jenis fi'il dari '${verb.past}'?`, 
+        options: amr.length > 0 ? [amr[0].value, amr[1].value, madi[6].value, 'يَقَعْ'].sort(() => Math.random() - 0.5) : ['Shahih', 'Mithal', 'Ajwaf', 'Naqis'],
+        correct: amr.length > 0 ? amr[0].value : verb.type.charAt(0).toUpperCase() + verb.type.slice(1)
+      }
+    ];
+    setQuizQuestions(genQuestions);
     setQuizScore(0);
     setActiveTab('quiz');
   };
@@ -143,16 +167,16 @@ export default function TashrifApp() {
                   {verbs.filter(v => v.past.includes(searchQuery) || v.translationId.includes(searchQuery)).map((verb) => (
                     <Card key={verb.id} className="hover:bg-primary-light transition-colors cursor-pointer group active:scale-[0.99] border-border">
                       <div className="p-3 flex items-center justify-between" onClick={() => handleVerbSelect(verb)}>
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-white border border-border rounded-lg flex items-center justify-center text-lg font-bold arabic-serif text-primary">
+                        <div className="flex items-center gap-4 text-left w-full">
+                          <div className="w-10 h-10 bg-white border border-border rounded-lg flex items-center justify-center text-lg font-bold arabic-serif text-primary shrink-0">
                             {verb.past[0]}
                           </div>
-                          <div>
-                            <h3 className="text-md font-bold text-text-dark leading-tight">{verb.past} – {verb.present}</h3>
-                            <p className="text-[11px] text-text-muted font-medium">{verb.translationId} (Wazan {verb.wazan})</p>
+                          <div className="flex-1">
+                            <h3 className="text-md font-bold text-text-dark leading-tight text-right arabic-serif" dir="rtl">{verb.past} – {verb.present}</h3>
+                            <p className="text-[11px] text-text-muted font-medium text-left mt-1">{verb.translationId} (Wazan {verb.wazan})</p>
                           </div>
                         </div>
-                        <Star className={cn("w-4 h-4", verb.isFavorite ? "fill-accent text-accent" : "text-stone-300")} />
+                        <Star className={cn("w-4 h-4 ml-2", verb.isFavorite ? "fill-accent text-accent" : "text-stone-300")} />
                       </div>
                     </Card>
                   ))}
@@ -164,7 +188,7 @@ export default function TashrifApp() {
                   <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full mb-3 inline-block uppercase tracking-widest">Modul Terpilih</span>
                   <h3 className="text-xl font-bold mb-2 arabic-serif leading-tight">تَصْرِيفُ المِثَال (Logika Mithal)</h3>
                   <p className="text-xs text-white/80 mb-5 leading-relaxed">Pelajari bagaimana huruf &quot;Waw&quot; dihilangkan dalam penggunaan bahasa Arab standar.</p>
-                  <Button variant="secondary" className="w-full py-3.5 border-none shadow-md">Pelajari Sekarang</Button>
+                  <Button onClick={() => setActiveTab('guide')} variant="secondary" className="w-full py-3.5 border-none shadow-md">Pelajari Sekarang</Button>
                 </div>
                 <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
               </section>
@@ -172,15 +196,19 @@ export default function TashrifApp() {
           )}
 
           {activeTab === 'learn' && selectedVerb && (
-            <LearnView verb={selectedVerb} onBack={() => setActiveTab('home')} onStartQuiz={startQuiz} />
+            <LearnView verb={selectedVerb} onBack={() => setActiveTab('home')} onStartQuiz={() => startQuiz(selectedVerb)} />
           )}
 
           {activeTab === 'ai' && (
             <AIView />
           )}
 
+          {activeTab === 'guide' && (
+            <GuideView onBack={() => setActiveTab('home')} />
+          )}
+
           {activeTab === 'quiz' && selectedVerb && (
-            <QuizView verb={selectedVerb} onComplete={() => setActiveTab('learn')} />
+            <QuizView verb={selectedVerb} questions={quizQuestions} onComplete={() => setActiveTab('learn')} />
           )}
         </AnimatePresence>
       </main>
@@ -295,8 +323,8 @@ function LearnView({ verb, onBack, onStartQuiz }: { verb: Verb, onBack: () => vo
 
       <div className="table-container bg-white rounded-xl border border-border overflow-hidden shadow-sm">
         <div className="grid grid-cols-12 bg-background border-b border-border py-2 text-[10px] font-bold uppercase text-text-muted tracking-widest px-4">
-          <div className="col-span-4 border-r border-border pr-2">Kata Ganti</div>
-          <div className="col-span-8 text-left pl-4">Mesin Konjugasi</div>
+          <div className="col-span-4 border-r border-border pr-2 text-left">Subjek</div>
+          <div className="col-span-8 text-right pl-4">Konjugasi Arab</div>
         </div>
         <div className="divide-y divide-border h-[300px] overflow-y-auto">
           {conjugations.map((c, i) => (
@@ -306,9 +334,22 @@ function LearnView({ verb, onBack, onStartQuiz }: { verb: Verb, onBack: () => vo
               animate={{ opacity: 1 }}
               className="grid grid-cols-12 items-center hover:bg-primary-light transition-colors group"
             >
-              <div className="col-span-4 bg-stone-50/50 py-2.5 px-4 text-[13px] text-text-muted border-r border-border h-full flex items-center">{c.dhamir} ({c.pronoun})</div>
+              <div className="col-span-4 bg-stone-50/50 py-2.5 px-4 text-[12px] text-text-muted border-r border-border h-full flex flex-col justify-center text-left">
+                <span className="font-bold text-primary">{c.dhamir}</span>
+                <span className="text-[10px] opacity-70">{c.pronoun}</span>
+              </div>
               <div className="col-span-8 flex justify-end items-center px-4 py-2.5 gap-4">
-                 <span className="text-lg font-bold arabic-serif text-primary">{c.value}</span>
+                 <div className="text-xl font-bold arabic-serif text-primary" dir="rtl">
+                    {c.parts.map((p, pIdx) => (
+                      <span key={pIdx} className={cn(
+                        p.type === 'prefix' ? "text-accent" : 
+                        p.type === 'suffix' ? "text-accent" : 
+                        "text-primary"
+                      )}>
+                        {p.text}
+                      </span>
+                    ))}
+                 </div>
                  <button 
                   onClick={() => playAudio(c.value, i)}
                   className={cn("p-1.5 rounded bg-background border border-border text-text-muted transition-all", isSpeaking === i ? "text-accent border-accent animate-pulse" : "opacity-0 group-hover:opacity-100 hover:text-primary hover:border-primary")}
@@ -329,31 +370,41 @@ function LearnView({ verb, onBack, onStartQuiz }: { verb: Verb, onBack: () => vo
   );
 }
 
-function QuizView({ verb, onComplete }: { verb: Verb, onComplete: () => void }) {
+function QuizView({ verb, questions, onComplete }: { verb: Verb, questions: { q: string, options: string[], correct: string }[], onComplete: () => void }) {
   const [step, setStep] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
 
-  const questions = [
-    { q: `Sempurnakan tasrif '${verb.past}' untuk dhamir 'أنتَ' (Madi)?`, options: [conjugate(verb.past, verb.present, 'past')[6].value, 'كَاتِب', 'يَكْتُبُ', 'تَقَعْ'], correct: conjugate(verb.past, verb.present, 'past')[6].value },
-    { q: `Apa bentuk Mudhari' untuk dhamir 'نحن'?`, options: [conjugate(verb.past, verb.present, 'present')[13].value, 'أَقَعُ', 'يَقَعُون', 'قَعْ'], correct: conjugate(verb.past, verb.present, 'present')[13].value },
-    { q: `Apa jenis fi'il dari '${verb.past}':`, options: ['Shahih', 'Mithal', 'Ajwaf', 'Naqis'], correct: verb.type.charAt(0).toUpperCase() + verb.type.slice(1) }
-  ];
-
-  const handleAnswer = (opt: string) => {
+  const handleAnswer = async (opt: string) => {
     setSelectedAnswer(opt);
-    if (opt === questions[step].correct) setScore(s => s + 1);
+    let newScore = score;
+    if (opt === questions[step].correct) {
+      newScore = score + 1;
+      setScore(newScore);
+    }
     
-    setTimeout(() => {
+    setTimeout(async () => {
       if (step < questions.length - 1) {
         setStep(s => s + 1);
         setSelectedAnswer(null);
       } else {
+        // Save Progress
+        if (verb.id) {
+          const actualScore = Math.round((newScore / questions.length) * 100);
+          await db.progress.add({
+            verbId: verb.id,
+            score: actualScore,
+            attempts: 1,
+            lastPracticed: Date.now()
+          });
+        }
         setShowResult(true);
       }
     }, 800);
   };
+
+  if (!questions.length) return <div className="p-8 text-center text-text-muted">Menyiapkan Latihan...</div>;
 
   if (showResult) {
     return (
@@ -376,7 +427,7 @@ function QuizView({ verb, onComplete }: { verb: Verb, onComplete: () => void }) 
          <span>Langkah {step + 1} dari {questions.length}</span>
       </div>
       <Card className="p-8 border-border shadow-md bg-white">
-        <h3 className="text-lg font-bold text-center leading-relaxed ltr-text">{questions[step].q}</h3>
+        <h3 className="text-lg font-bold text-left leading-relaxed text-text-dark border-l-4 border-accent pl-4">{questions[step].q}</h3>
       </Card>
       <div className="grid grid-cols-1 gap-3">
         {questions[step].options.map((opt, i) => (
@@ -385,12 +436,16 @@ function QuizView({ verb, onComplete }: { verb: Verb, onComplete: () => void }) 
             onClick={() => handleAnswer(opt)}
             disabled={selectedAnswer !== null}
             className={cn(
-              "p-4 rounded-xl border border-border text-center font-bold transition-all",
-              selectedAnswer === opt ? (opt === questions[step].correct ? "bg-primary text-white" : "bg-red-50 text-red-700") : "bg-white",
-              selectedAnswer !== null && opt === questions[step].correct ? "bg-primary text-white" : ""
+              "p-4 rounded-xl border border-border text-right font-bold transition-all flex items-center justify-between gap-4",
+              selectedAnswer === opt ? (opt === questions[step].correct ? "bg-primary text-white border-primary" : "bg-red-50 text-red-700 border-red-200") : "bg-white hover:border-primary",
+              selectedAnswer !== null && opt === questions[step].correct ? "bg-primary text-white border-primary" : ""
             )}
+            dir="rtl"
           >
             <span className="arabic-serif text-xl">{opt}</span>
+            <div className={cn("w-5 h-5 rounded-full border flex items-center justify-center shrink-0", selectedAnswer === opt ? "bg-white text-primary" : "border-stone-200")}>
+               {selectedAnswer === opt && (opt === questions[step].correct ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3 text-red-500" />)}
+            </div>
           </button>
         ))}
       </div>
@@ -441,10 +496,10 @@ function AIView() {
       </div>
 
       <Card className="p-6 border-border shadow-md">
-        <div className="text-[11px] font-bold text-text-muted uppercase mb-3 tracking-widest">Input Pertanyaan</div>
+        <div className="text-[11px] font-bold text-text-muted uppercase mb-3 tracking-widest text-left pl-1">Input Pertanyaan</div>
         <textarea
           placeholder="Masukkan huruf akar atau frase kata kerja lengkap..."
-          className="w-full h-32 p-4 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary resize-none transition-all arabic-text"
+          className="w-full h-32 p-4 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary resize-none transition-all text-left"
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
@@ -470,6 +525,34 @@ function AIView() {
           </Card>
         </motion.div>
       )}
+    </motion.div>
+  );
+}
+
+function GuideView({ onBack }: { onBack: () => void }) {
+  const terms = [
+    { title: 'Shahih', desc: 'Kata kerja yang semua huruf akarnya adalah huruf asli dan bukan huruf penyakit (Alif, Waw, Ya).' },
+    { title: 'Mithal', desc: 'Kata kerja yang huruf pertama akarnya adalah huruf penyakit (biasanya Waw).' },
+    { title: 'Ajwaf', desc: 'Kata kerja yang huruf tengah akarnya adalah huruf penyakit.' },
+    { title: 'Naqis', desc: 'Kata kerja yang huruf terakhir akarnya adalah huruf penyakit.' },
+    { title: 'Wazan', desc: 'Pola atau rumus timbangan kata dalam bahasa Arab.' },
+    { title: 'Tasrif', desc: 'Perubahan kata dari satu bentuk ke bentuk lain sesuai waktu dan subjek.' },
+  ];
+
+  return (
+    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold">Pusat Panduan & Istilah</h2>
+        <Button onClick={onBack} variant="ghost" className="p-2"><ChevronRight /></Button>
+      </div>
+      <div className="grid grid-cols-1 gap-3 pb-20">
+        {terms.map((t, i) => (
+          <Card key={i} className="p-4 bg-white">
+            <h4 className="font-bold text-primary mb-1">{t.title}</h4>
+            <p className="text-xs text-text-muted leading-relaxed">{t.desc}</p>
+          </Card>
+        ))}
+      </div>
     </motion.div>
   );
 }
