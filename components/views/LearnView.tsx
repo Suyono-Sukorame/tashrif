@@ -31,11 +31,11 @@ export const LearnView = ({ verb, onBack, onStartQuiz }: LearnViewProps) => {
   const playAudio = async (text: string, index: number) => {
     setIsSpeaking(index);
     try {
-      const ai = new GoogleGenAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
-      const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const response = await model.generateContent({
+      const client = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY! });
+      const response = await client.models.generateContent({
+        model: "gemini-1.5-flash",
         contents: [{ role: 'user', parts: [{ text: `Katakan dengan jelas dalam bahasa Arab: ${text}` }] }],
-        generationConfig: {
+        config: {
           responseModalities: ["AUDIO"],
           speechConfig: {
             voiceConfig: {
@@ -45,7 +45,7 @@ export const LearnView = ({ verb, onBack, onStartQuiz }: LearnViewProps) => {
         }
       });
       
-      const base64Audio = response.response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
       if (base64Audio) {
         const audio = new Audio(`data:audio/wav;base64,${base64Audio}`);
         audio.onended = () => setIsSpeaking(null);

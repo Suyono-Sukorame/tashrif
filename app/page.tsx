@@ -148,17 +148,23 @@ export default function TashrifApp() {
         darkMode ? "bg-dark-card border-dark-border shadow-[0_-4px_12px_rgba(0,0,0,0.2)]" : "bg-white border-border shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
       )}>
         <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={<History />} label="Koleksi" />
-        <NavButton active={activeTab === 'learn'} onClick={() => setActiveTab('learn')} icon={<BookOpen />} label="Mesin" />
+        <NavButton active={activeTab === 'learn'} onClick={() => { if(selectedVerb) setActiveTab('learn'); else setActiveTab('home'); }} icon={<BookOpen />} label="Tashrif" />
         <div className="relative -top-5">
           <button 
              onClick={() => setActiveTab('ai')}
-             className={cn("w-12 h-12 rounded-lg flex items-center justify-center shadow-md transition-all active:scale-90 border", activeTab === 'ai' ? 'bg-accent text-white border-accent' : 'bg-primary text-white border-primary')}
+             className={cn(
+               "w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all active:scale-95 border-4", 
+               activeTab === 'ai' 
+                 ? "bg-accent text-white border-accent" 
+                 : (darkMode ? "bg-slate-800 text-emerald-400 border-dark-bg" : "bg-primary text-white border-[#F3F4F6]")
+             )}
           >
-            <Brain className="w-5 h-5" />
+            <Brain className="w-6 h-6" />
           </button>
+          <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-text-muted dark:text-slate-500 uppercase tracking-tighter">Mesin</span>
         </div>
-        <NavButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings />} label="Registri" />
-        <NavButton active={activeTab === 'access'} onClick={() => setActiveTab('access')} icon={<Zap />} label="Akses" />
+        <NavButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings />} label="Profil" />
+        <NavButton active={activeTab === 'access'} onClick={() => setActiveTab('access')} icon={<History />} label="Akses" />
       </nav>
     </div>
   );

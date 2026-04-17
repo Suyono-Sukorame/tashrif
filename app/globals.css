@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-sans), system-ui, sans-serif;
   --font-serif: var(--font-serif-arabic), serif;
@@ -22,11 +24,16 @@
 
 @layer base {
   body {
-    @apply font-sans bg-background text-text-dark transition-colors duration-300;
+    @apply font-sans transition-colors duration-300;
   }
   
   .dark body {
     @apply bg-dark-bg text-dark-text;
+  }
+  
+  /* Fallback for components not using dark: variant */
+  body:not(.dark) {
+    @apply bg-background text-text-dark;
   }
 
   .arabic-text {

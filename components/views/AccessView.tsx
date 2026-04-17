@@ -69,20 +69,20 @@ export const AccessView = ({ onSelectVerb, onBack }: AccessViewProps) => {
         )}
       </div>
 
-      <section className="bg-stone-900 dark:bg-slate-950 rounded-2xl p-6 text-white border border-white/5 dark:border-slate-800">
-         <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-4">Informasi Sistem</h4>
+      <section className="bg-stone-50 dark:bg-slate-950 rounded-2xl p-6 text-text-dark dark:text-white border border-border dark:border-slate-800 transition-colors duration-300">
+         <h4 className="text-[10px] font-bold uppercase tracking-widest text-text-muted dark:text-white/50 mb-4">Informasi Sistem</h4>
          <div className="space-y-3">
             <div className="flex justify-between text-xs">
-               <span className="text-white/60">Engine Version</span>
-               <span className="font-mono">v2.8.4-stable</span>
+               <span className="text-text-muted dark:text-slate-400">Engine Version</span>
+               <span className="font-mono text-text-dark dark:text-dark-text">v2.8.4-stable</span>
             </div>
             <div className="flex justify-between text-xs">
-               <span className="text-white/60">Local Database</span>
-               <span className="font-mono">IndexedDB/Dexie</span>
+               <span className="text-text-muted dark:text-slate-400">Local Database</span>
+               <span className="font-mono text-text-dark dark:text-dark-text">IndexedDB/Dexie</span>
             </div>
             <div className="flex justify-between text-xs">
-               <span className="text-white/60">Last Sync</span>
-               <span className="font-mono">Just now</span>
+               <span className="text-text-muted dark:text-slate-400">Last Sync</span>
+               <span className="font-mono text-text-dark dark:text-dark-text">Just now</span>
             </div>
          </div>
       </section>
