@@ -1,0 +1,475 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { GoogleGenAI, Type } from "@google/genai";
+import { Search, BookOpen, Brain, Settings, History, Star, ChevronLeft, ChevronRight, Menu, Play, CheckCircle2, AlertCircle, TrendingUp, Award, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { db, seedVerbs, type Verb } from '@/lib/db';
+import { conjugate, DHAMIRS, type Tense } from '@/lib/conjugator';
+import { useMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
+
+// --- Components ---
+
+const Card = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <div className={cn("bg-white rounded-xl border border-border shadow-sm overflow-hidden", className)}>
+    {children}
+  </div>
+);
+
+const Button = ({ children, onClick, variant = 'primary', className, disabled, type = 'button' }: { children: React.ReactNode, onClick?: () => void, variant?: 'primary' | 'secondary' | 'ghost' | 'accent', className?: string, disabled?: boolean, type?: 'button' | 'submit' }) => {
+  const variants = {
+    primary: 'bg-primary text-white hover:bg-primary/95',
+    secondary: 'bg-primary-light text-primary hover:bg-emerald-100',
+    ghost: 'bg-transparent text-text-muted hover:bg-stone-100',
+    accent: 'bg-accent text-white hover:bg-accent/90',
+  };
+
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn("px-4 py-2.5 rounded-lg font-semibold transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 text-sm", variants[variant], className)}
+    >
+      {children}
+    </button>
+  );
+};
+
+// --- Main App ---
+
+export default function TashrifApp() {
+  const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'ai' | 'settings' | 'quiz'>('home');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedVerb, setSelectedVerb] = useState<Verb | null>(null);
+  const [verbs, setVerbs] = useState<Verb[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Quiz State
+  const [quizScore, setQuizScore] = useState(0);
+
+  useEffect(() => {
+    const init = async () => {
+      await seedVerbs();
+      const allVerbs = await db.verbs.toArray();
+      setVerbs(allVerbs);
+      setLoading(false);
+    };
+    init();
+  }, []);
+
+  const handleVerbSelect = (verb: Verb) => {
+    setSelectedVerb(verb);
+    setActiveTab('learn');
+  };
+
+  const startQuiz = () => {
+    setQuizScore(0);
+    setActiveTab('quiz');
+  };
+
+  return (
+    <div className="flex flex-col h-screen max-w-md mx-auto bg-stone-50 overflow-hidden relative shadow-2xl">
+      {/* Header */}
+      <header className="px-6 py-4 bg-white sticky top-0 z-20 border-b border-border">
+        <div className="flex items-center justify-between mb-3">
+           <div className="flex items-center gap-2">
+             <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-lg">ت</div>
+             <h1 className="text-lg font-bold">Tashrif<span className="text-primary">Master</span></h1>
+           </div>
+          {activeTab === 'quiz' ? (
+            <div className="text-xs font-bold text-primary bg-primary-light px-2 py-1 rounded">Quiz Mode</div>
+          ) : (
+            <button className="p-2 rounded-full hover:bg-stone-100">
+              <Menu className="w-5 h-5 text-text-muted" />
+            </button>
+          )}
+        </div>
+        
+        {activeTab === 'home' && (
+          <div className="relative group">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors" />
+            <input
+              type="text"
+              placeholder="ابحث عن جذر أو فعل (Syrch root or verb)..."
+              className="w-full pr-10 pl-4 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary focus:bg-white transition-all text-right arabic-text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        )}
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto px-6 py-6 pb-24 bg-[#F3F4F6]">
+        <AnimatePresence mode="wait">
+          {activeTab === 'home' && (
+            <motion.div
+              key="home"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <section className="grid grid-cols-2 gap-4">
+                <Card className="p-4 bg-white border-border">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Mastery Index</span>
+                  </div>
+                  <div className="text-2xl font-bold text-text-dark">84%</div>
+                  <div className="text-[10px] text-text-muted">+5.2% session drift</div>
+                </Card>
+                <Card className="p-4 bg-white border-border">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Award className="w-4 h-4 text-accent" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Verb Library</span>
+                  </div>
+                  <div className="text-2xl font-bold text-text-dark">1,480</div>
+                  <div className="text-[10px] text-text-muted">Level 5 Achieved</div>
+                </Card>
+              </section>
+
+              <section>
+                <div className="flex items-center justify-between mb-3 ltr-text px-1">
+                   <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-text-muted" />
+                      <h2 className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Verb Registry</h2>
+                   </div>
+                  <Button variant="ghost" className="text-[11px] font-bold text-primary px-2 py-1">Export Library</Button>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  {verbs.filter(v => v.past.includes(searchQuery) || v.translationId.includes(searchQuery)).map((verb) => (
+                    <Card key={verb.id} className="hover:bg-primary-light transition-colors cursor-pointer group active:scale-[0.99] border-border">
+                      <div className="p-3 flex items-center justify-between" onClick={() => handleVerbSelect(verb)}>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-white border border-border rounded-lg flex items-center justify-center text-lg font-bold arabic-serif text-primary">
+                            {verb.past[0]}
+                          </div>
+                          <div>
+                            <h3 className="text-md font-bold text-text-dark leading-tight">{verb.past} – {verb.present}</h3>
+                            <p className="text-[11px] text-text-muted font-medium">{verb.translationId} (Wazan {verb.wazan})</p>
+                          </div>
+                        </div>
+                        <Star className={cn("w-4 h-4", verb.isFavorite ? "fill-accent text-accent" : "text-stone-300")} />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+
+              <section className="bg-primary rounded-3xl p-6 text-white overflow-hidden relative">
+                <div className="relative z-10">
+                  <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-full mb-3 inline-block uppercase tracking-widest">Featured Lesson</span>
+                  <h3 className="text-xl font-bold mb-2 arabic-serif">تَصْرِيفُ المِثَال (Mithal Conjugation)</h3>
+                  <p className="text-sm text-white/80 mb-4">Learn how verbs starting with &quot;Waw&quot; change in the present tense.</p>
+                  <Button variant="secondary" className="w-full py-3">Start Learning Now</Button>
+                </div>
+                <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+              </section>
+            </motion.div>
+          )}
+
+          {activeTab === 'learn' && selectedVerb && (
+            <LearnView verb={selectedVerb} onBack={() => setActiveTab('home')} onStartQuiz={startQuiz} />
+          )}
+
+          {activeTab === 'ai' && (
+            <AIView />
+          )}
+
+          {activeTab === 'quiz' && selectedVerb && (
+            <QuizView verb={selectedVerb} onComplete={() => setActiveTab('learn')} />
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-border px-8 py-3 flex items-center justify-between z-30 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+        <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={<History />} label="Library" />
+        <NavButton active={activeTab === 'learn'} onClick={() => setActiveTab('learn')} icon={<BookOpen />} label="Engine" />
+        <div className="relative -top-5">
+          <button 
+             onClick={() => setActiveTab('ai')}
+             className={cn("w-12 h-12 rounded-lg flex items-center justify-center shadow-md transition-all active:scale-90 border", activeTab === 'ai' ? 'bg-accent text-white border-accent' : 'bg-primary text-white border-primary')}
+          >
+            <Brain className="w-5 h-5" />
+          </button>
+        </div>
+        <NavButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings />} label="Registry" />
+        <NavButton active={false} onClick={() => {}} icon={<Menu />} label="Access" />
+      </nav>
+    </div>
+  );
+}
+
+function NavButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) {
+  return (
+    <button onClick={onClick} className="flex flex-col items-center gap-1 group">
+      <div className={cn("transition-all duration-300", active ? "text-primary scale-110" : "text-stone-400 group-hover:text-stone-600")}>
+        <div className="w-5 h-5 flex items-center justify-center">
+          {icon}
+        </div>
+      </div>
+      <span className={cn("text-[10px] font-bold uppercase tracking-tighter transition-all", active ? "opacity-100 text-primary" : "opacity-0 text-stone-400 group-hover:opacity-100")}>{label}</span>
+    </button>
+  );
+}
+
+// --- Specific Views ---
+
+function LearnView({ verb, onBack, onStartQuiz }: { verb: Verb, onBack: () => void, onStartQuiz: () => void }) {
+  const [activeTense, setActiveTense] = useState<Tense>('past');
+  const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
+  const conjugations = conjugate(verb.past, verb.present, activeTense);
+
+  const tenses: { id: Tense, label: string }[] = [
+    { id: 'past', label: 'Past' },
+    { id: 'present', label: 'Present' },
+    { id: 'future', label: 'Future' },
+    { id: 'imperative', label: 'Amr' },
+  ];
+
+  const playAudio = async (text: string, index: number) => {
+    setIsSpeaking(index);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-flash-tts-preview",
+        contents: [{ parts: [{ text: `Say clearly in Arabic: ${text}` }] }],
+        config: {
+          responseModalities: ["AUDIO"],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: 'Kore' }
+            }
+          }
+        }
+      });
+      
+      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      if (base64Audio) {
+        const audio = new Audio(`data:audio/wav;base64,${base64Audio}`);
+        audio.onended = () => setIsSpeaking(null);
+        await audio.play();
+      }
+    } catch (err) {
+      console.error(err);
+      setIsSpeaking(null);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-4"
+    >
+      <section className="bg-white border border-border rounded-xl p-5 flex justify-between items-center shadow-sm">
+        <div className="verb-info">
+          <h1 className="text-3xl font-bold text-primary arabic-serif leading-none mb-2">{verb.past} – {verb.present}</h1>
+          <div className="flex gap-2">
+             <span className="text-[10px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold uppercase">{verb.type}</span>
+             <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold uppercase">Pattern {verb.wazan}</span>
+             <span className="text-[11px] text-text-muted">{verb.translationId}</span>
+          </div>
+        </div>
+        <button onClick={onBack} className="w-10 h-10 rounded-full bg-background border border-border flex items-center justify-center text-text-muted hover:bg-stone-50">
+           <ChevronRight className="w-5 h-5" />
+        </button>
+      </section>
+
+      <div className="flex gap-1 p-1 bg-white border border-border rounded-xl overflow-x-auto no-scrollbar">
+        {tenses.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTense(t.id)}
+            className={cn("flex-1 whitespace-nowrap px-3 py-2 rounded-lg text-[11px] font-bold uppercase transition-all tracking-wider", activeTense === t.id ? "bg-primary text-white shadow-sm" : "text-text-muted hover:bg-stone-50")}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="table-container bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+        <div className="grid grid-cols-12 bg-background border-b border-border py-2 text-[10px] font-bold uppercase text-text-muted tracking-widest px-4">
+          <div className="col-span-4 border-r border-border pr-2">Pronoun</div>
+          <div className="col-span-8 text-left pl-4">Conjugation Engine</div>
+        </div>
+        <div className="divide-y divide-border h-[300px] overflow-y-auto">
+          {conjugations.map((c, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-12 items-center hover:bg-primary-light transition-colors group"
+            >
+              <div className="col-span-4 bg-stone-50/50 py-2.5 px-4 text-[13px] text-text-muted border-r border-border h-full flex items-center">{c.dhamir} ({c.pronoun})</div>
+              <div className="col-span-8 flex justify-end items-center px-4 py-2.5 gap-4">
+                 <span className="text-lg font-bold arabic-serif text-primary">{c.value}</span>
+                 <button 
+                  onClick={() => playAudio(c.value, i)}
+                  className={cn("p-1.5 rounded bg-background border border-border text-text-muted transition-all", isSpeaking === i ? "text-accent border-accent animate-pulse" : "opacity-0 group-hover:opacity-100 hover:text-primary hover:border-primary")}
+                 >
+                    <Play className="w-3 h-3 fill-current" />
+                 </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="pb-8 grid grid-cols-2 gap-3">
+        <Button onClick={onStartQuiz} variant="primary" className="py-3.5 shadow-lg shadow-primary/10">Take Drill</Button>
+        <Button variant="ghost" className="py-3.5 bg-white border border-border">Save Rules</Button>
+      </div>
+    </motion.div>
+  );
+}
+
+function QuizView({ verb, onComplete }: { verb: Verb, onComplete: () => void }) {
+  const [step, setStep] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
+
+  const questions = [
+    { q: `Sempurnakan tasrif '${verb.past}' untuk dhamir 'أنتَ' (Madi)?`, options: [conjugate(verb.past, verb.present, 'past')[6].value, 'كَاتِب', 'يَكْتُبُ', 'تَقَعْ'], correct: conjugate(verb.past, verb.present, 'past')[6].value },
+    { q: `Bentuk Mudhari' untuk dhamir 'نحن' adalah?`, options: [conjugate(verb.past, verb.present, 'present')[13].value, 'أَقَعُ', 'يَقَعُون', 'قَعْ'], correct: conjugate(verb.past, verb.present, 'present')[13].value },
+    { q: `Apa jenis fi'il dari '${verb.past}':`, options: ['Shahih', 'Mithal', 'Ajwaf', 'Naqis'], correct: verb.type.charAt(0).toUpperCase() + verb.type.slice(1) }
+  ];
+
+  const handleAnswer = (opt: string) => {
+    setSelectedAnswer(opt);
+    if (opt === questions[step].correct) setScore(s => s + 1);
+    
+    setTimeout(() => {
+      if (step < questions.length - 1) {
+        setStep(s => s + 1);
+        setSelectedAnswer(null);
+      } else {
+        setShowResult(true);
+      }
+    }, 800);
+  };
+
+  if (showResult) {
+    return (
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6 pt-10">
+        <div className="w-24 h-24 bg-primary text-white rounded-full flex items-center justify-center mx-auto text-3xl font-bold border-8 border-primary-light">
+          {Math.round((score / questions.length) * 100)}%
+        </div>
+        <div>
+          <h2 className="text-xl font-bold">Latihan Selesai!</h2>
+          <p className="text-sm text-text-muted mt-2">Anda berhasil menjawab {score} dari {questions.length} pertanyaan.</p>
+        </div>
+        <Button onClick={onComplete} variant="primary" className="w-full py-4">Kembali ke Engine</Button>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 pt-4">
+      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-text-muted">
+         <span>Step {step + 1} of {questions.length}</span>
+      </div>
+      <Card className="p-8 border-border shadow-md bg-white">
+        <h3 className="text-lg font-bold text-center leading-relaxed ltr-text">{questions[step].q}</h3>
+      </Card>
+      <div className="grid grid-cols-1 gap-3">
+        {questions[step].options.map((opt, i) => (
+          <button
+            key={i}
+            onClick={() => handleAnswer(opt)}
+            disabled={selectedAnswer !== null}
+            className={cn(
+              "p-4 rounded-xl border border-border text-center font-bold transition-all",
+              selectedAnswer === opt ? (opt === questions[step].correct ? "bg-primary text-white" : "bg-red-50 text-red-700") : "bg-white",
+              selectedAnswer !== null && opt === questions[step].correct ? "bg-primary text-white" : ""
+            )}
+          >
+            <span className="arabic-serif text-xl">{opt}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AIView() {
+  const [input, setInput] = useState('');
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [isAnalysing, setIsAnalysing] = useState(false);
+
+  const handleAnalyse = async () => {
+    if (!input) return;
+    setIsAnalysing(true);
+    
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Analyze the verb: ${input}`,
+        config: {
+            systemInstruction: "You are an expert Arabic grammarian. Analyze the given verb in Arabic. Provide root, wazan, type (Shahih/Mithal/etc), and mean in English. Return JSON format.",
+            responseMimeType: "application/json"
+        }
+      });
+      setAnalysis(response.text ?? null);
+    } catch (error) {
+      console.error(error);
+      setAnalysis(JSON.stringify({ error: "Could not connect to AI. Please check your API key." }));
+    } finally {
+      setIsAnalysing(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="space-y-6"
+    >
+      <div className="bg-white border border-border rounded-xl p-6 text-center shadow-sm">
+        <div className="w-16 h-16 bg-primary-light rounded-xl flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+          <Brain className="w-8 h-8 text-primary" />
+        </div>
+        <h2 className="text-xl font-bold">Grammar Intelligence Engine</h2>
+        <p className="text-xs text-text-muted mt-1 uppercase tracking-wider font-bold">Enterprise NLP Module v2.4</p>
+      </div>
+
+      <Card className="p-6 border-border shadow-md">
+        <div className="text-[11px] font-bold text-text-muted uppercase mb-3 tracking-widest">Input Query</div>
+        <textarea
+          placeholder="Input root characters or full verb phrase..."
+          className="w-full h-32 p-4 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary resize-none transition-all arabic-text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <Button 
+          variant="primary" 
+          className="w-full mt-4 py-3.5" 
+          onClick={handleAnalyse}
+          disabled={isAnalysing}
+        >
+          {isAnalysing ? "Processing Lexicon..." : "Dispatch Query to Engine"}
+        </Button>
+      </Card>
+
+      {analysis && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="p-1 border-primary/20 bg-primary-light">
+             <div className="bg-white p-4 rounded-lg flex items-start gap-3 border border-border">
+               <div className="mt-1"><CheckCircle2 className="w-4 h-4 text-primary" /></div>
+               <div className="text-sm font-medium text-text-dark leading-relaxed">
+                  <pre className="whitespace-pre-wrap font-sans text-xs text-text-muted">{analysis}</pre>
+               </div>
+             </div>
+          </Card>
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}

@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-serif: var(--font-serif-arabic), serif;
+  --font-arabic: var(--font-sans-arabic), sans-serif;
+  
+  --color-primary: #064E3B;
+  --color-primary-light: #ECFDF5;
+  --color-accent: #D97706;
+  --color-background: #F9FAFB;
+  --color-text-dark: #111827;
+  --color-text-muted: #6B7280;
+  --color-border: #E5E7EB;
+  --color-white: #FFFFFF;
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-background text-text-dark;
+  }
+  
+  .arabic-text {
+    @apply font-arabic leading-[1.6];
+  }
+  
+  .arabic-serif {
+    @apply font-serif;
+  }
+}
+
+/* RTL Helpers */
+[dir="rtl"] .ltr-text {
+  direction: ltr;
+  text-align: left;
+}
