@@ -5,6 +5,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { GoogleGenAI } from "@google/genai";
 import { cn } from '@/lib/utils';
+import { db } from '@/lib/db';
 
 export const AIView = () => {
   const [input, setInput] = useState('');
