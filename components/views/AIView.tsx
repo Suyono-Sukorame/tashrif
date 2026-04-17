@@ -23,6 +23,8 @@ export const AIView = () => {
       Sediakan informasi berikut dalam format JSON:
       {
         "root": "akar kata",
+        "past": "bentuk fiil madhi (past)",
+        "present": "bentuk fiil mudhari (present)",
         "wazan": "pola wazan",
         "type": "tipe kata (Shahih, Mithal, dll)",
         "meaning": "arti dalam bahasa Indonesia",
@@ -134,6 +136,28 @@ export const AIView = () => {
                      <p className="text-[9px] font-bold text-text-muted dark:text-slate-500 uppercase mb-1">Catatan Linguistik</p>
                      <p className="text-[11px] text-text-dark dark:text-slate-300 leading-relaxed italic">&quot;{analysis.explanation}&quot;</p>
                   </div>
+
+                  <Button 
+                    onClick={async () => {
+                      const parts = analysis.root.split('-');
+                      const past = analysis.root.replace(/-/g, ''); // Placeholder, AI should ideally provide this
+                      await db.verbs.add({
+                        root: analysis.root,
+                        past: analysis.past || input, // Use input as fallback if past not provided
+                        present: analysis.present || "ي...", 
+                        wazan: analysis.wazan,
+                        type: analysis.type.toLowerCase() as any,
+                        translationId: analysis.meaning,
+                        isFavorite: false,
+                        createdAt: Date.now()
+                      });
+                      alert("Berhasil disimpan ke Koleksi!");
+                    }}
+                    variant="secondary" 
+                    className="w-full py-3 rounded-xl border border-primary/20"
+                  >
+                    Simpan ke Koleksi
+                  </Button>
                </div>
             </Card>
           )}

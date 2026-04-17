@@ -21,14 +21,14 @@ export const GuideView = ({ onBack }: GuideViewProps) => {
   return (
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Pusat Panduan & Istilah</h2>
-        <Button onClick={onBack} variant="ghost" className="p-2"><ChevronRight /></Button>
+        <h2 className="text-xl font-bold dark:text-dark-text">Pusat Panduan & Istilah</h2>
+        <Button onClick={onBack} variant="ghost" className="p-2"><ChevronRight className="dark:text-dark-text" /></Button>
       </div>
       <div className="grid grid-cols-1 gap-3 pb-20">
         {terms.map((t, i) => (
-          <Card key={i} className="p-4 bg-white">
-            <h4 className="font-bold text-primary mb-1">{t.title}</h4>
-            <p className="text-xs text-text-muted leading-relaxed">{t.desc}</p>
+          <Card key={i} className="p-4 bg-white dark:bg-dark-card border-border dark:border-dark-border">
+            <h4 className="font-bold text-primary dark:text-emerald-400 mb-1">{t.title}</h4>
+            <p className="text-xs text-text-muted dark:text-slate-400 leading-relaxed">{t.desc}</p>
           </Card>
         ))}
       </div>

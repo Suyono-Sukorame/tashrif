@@ -23,6 +23,18 @@ const ibmPlexArabic = IBM_Plex_Sans_Arabic({
 export const metadata: Metadata = {
   title: 'Tashrif Master',
   description: 'Enterprise-grade Arabic Verb Conjugator',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Tashrif Master',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    apple: '/icon.png',
+  },
 };
 
 export default function RootLayout({
@@ -35,6 +47,13 @@ export default function RootLayout({
       <body className="bg-stone-50 text-stone-900 min-h-screen">
         {children}
         <Toaster position="top-center" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+              navigator.serviceWorker.register('/sw.js');
+            });
+          }
+        ` }} />
       </body>
     </html>
   );

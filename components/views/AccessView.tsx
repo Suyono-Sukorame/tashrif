@@ -74,7 +74,7 @@ export const AccessView = ({ onSelectVerb, onBack }: AccessViewProps) => {
          <div className="space-y-3">
             <div className="flex justify-between text-xs">
                <span className="text-text-muted dark:text-slate-400">Engine Version</span>
-               <span className="font-mono text-text-dark dark:text-dark-text">v2.8.4-stable</span>
+               <span className="font-mono text-text-dark dark:text-dark-text">v4.0.2-hybrid</span>
             </div>
             <div className="flex justify-between text-xs">
                <span className="text-text-muted dark:text-slate-400">Local Database</span>

@@ -1,0 +1,17 @@
+{
+  "name": "Tashrif Master",
+  "short_name": "Tashrif",
+  "description": "Enterprise-grade Arabic Verb Conjugator",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#064E3B",
+  "theme_color": "#064E3B",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

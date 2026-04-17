@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Brain, Settings, History, Zap } from 'lucide-react';
+import { BookOpen, Brain, Settings, Library, Zap, Save } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { db, seedVerbs, type Verb } from '@/lib/db';
 import { conjugate, DHAMIRS } from '@/lib/conjugator';
 import { type ActiveTab, type QuizQuestion } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 
 // Components
 import { Header } from '@/components/Header';
@@ -15,6 +16,8 @@ import { HomeView } from '@/components/views/HomeView';
 import { LearnView } from '@/components/views/LearnView';
 import { AIView } from '@/components/views/AIView';
 import { QuizView } from '@/components/views/QuizView';
+import { AuthView } from '@/components/views/AuthView';
+import { AdminView } from '@/components/views/AdminView';
 import { SettingsView } from '@/components/views/SettingsView';
 import { AccessView } from '@/components/views/AccessView';
 import { GuideView } from '@/components/views/GuideView';
@@ -22,11 +25,14 @@ import { GuideView } from '@/components/views/GuideView';
 // --- Main App ---
 
 export default function TashrifApp() {
+  const [session, setSession] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
+  const isAdmin = session?.user?.email === 'admin@tashrif.com'; // Admin toggle
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVerb, setSelectedVerb] = useState<Verb | null>(null);
   const [verbs, setVerbs] = useState<Verb[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ mastery: 0, count: 0 });
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark';
@@ -43,10 +49,34 @@ export default function TashrifApp() {
 
   useEffect(() => {
     const init = async () => {
+      // Auth Check
+      const { data: { session: initialSession } } = await supabase.auth.getSession();
+      setSession(initialSession);
+
+      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+        setSession(session);
+      });
+
       await seedVerbs();
       const allVerbs = await db.verbs.toArray();
+      const allProgress = await db.progress.toArray();
+      
+      const avgMastery = allProgress.length > 0 
+        ? Math.round(allProgress.reduce((acc, p) => acc + p.score, 0) / allProgress.length)
+        : 0;
+
       setVerbs(allVerbs);
+      setStats({
+        mastery: avgMastery,
+        count: allVerbs.length
+      });
       setLoading(false);
+      
+      // Background Sync
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        import('@/lib/sync').then(m => m.syncWithCloud());
+      }
     };
     init();
   }, []);
@@ -84,6 +114,7 @@ export default function TashrifApp() {
   };
 
   if (loading) return <div className="h-screen flex items-center justify-center bg-stone-50 text-xs font-bold uppercase tracking-widest text-text-muted">Inisialisasi Leksikon...</div>;
+  if (!session) return <AuthView />;
 
   return (
     <div className={cn(
@@ -104,32 +135,48 @@ export default function TashrifApp() {
         <AnimatePresence mode="wait">
           {activeTab === 'home' && (
             <HomeView 
+              key="home"
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               verbs={verbs}
               handleVerbSelect={handleVerbSelect}
               setActiveTab={setActiveTab}
+              stats={stats}
             />
           )}
 
-          {activeTab === 'learn' && selectedVerb && (
-            <LearnView verb={selectedVerb} onBack={() => setActiveTab('home')} onStartQuiz={() => startQuiz(selectedVerb)} />
+          {activeTab === 'learn' && (
+            selectedVerb ? (
+              <LearnView key="learn" verb={selectedVerb} onBack={() => setSelectedVerb(null)} onStartQuiz={() => startQuiz(selectedVerb)} />
+            ) : (
+              <div key="select-verb" className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                   <h2 className="text-sm font-bold uppercase tracking-widest text-text-muted dark:text-slate-400">Pilih Kata Kerja</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                   {verbs.filter(v => v.past.includes(searchQuery) || v.translationId.includes(searchQuery)).map((verb) => (
+                     <VerbCard key={verb.id} verb={verb} onClick={handleVerbSelect} />
+                   ))}
+                </div>
+              </div>
+            )
           )}
 
           {activeTab === 'ai' && (
-            <AIView />
+            <AIView key="ai" />
           )}
 
           {activeTab === 'guide' && (
-            <GuideView onBack={() => setActiveTab('home')} />
+            <GuideView key="guide" onBack={() => setActiveTab('home')} />
           )}
 
           {activeTab === 'quiz' && selectedVerb && (
-            <QuizView verb={selectedVerb} questions={quizQuestions} onComplete={() => setActiveTab('learn')} />
+            <QuizView key="quiz" verb={selectedVerb} questions={quizQuestions} onComplete={() => setActiveTab('learn')} />
           )}
 
           {activeTab === 'settings' && (
             <SettingsView 
+              key="settings"
               onBack={() => setActiveTab('home')} 
               darkMode={darkMode}
               setDarkMode={setDarkMode}
@@ -137,7 +184,11 @@ export default function TashrifApp() {
           )}
 
           {activeTab === 'access' && (
-            <AccessView onSelectVerb={handleVerbSelect} onBack={() => setActiveTab('home')} />
+            <AccessView key="access" onSelectVerb={handleVerbSelect} onBack={() => setActiveTab('home')} />
+          )}
+
+          {activeTab === 'admin' && isAdmin && (
+            <AdminView key="admin" />
           )}
         </AnimatePresence>
       </main>
@@ -147,8 +198,8 @@ export default function TashrifApp() {
         "fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t px-8 py-3 flex items-center justify-between z-30 transition-colors duration-300",
         darkMode ? "bg-dark-card border-dark-border shadow-[0_-4px_12px_rgba(0,0,0,0.2)]" : "bg-white border-border shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
       )}>
-        <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={<History />} label="Koleksi" />
-        <NavButton active={activeTab === 'learn'} onClick={() => { if(selectedVerb) setActiveTab('learn'); else setActiveTab('home'); }} icon={<BookOpen />} label="Tashrif" />
+        <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={<Library />} label="Koleksi" />
+        <NavButton active={activeTab === 'learn'} onClick={() => setActiveTab('learn')} icon={<BookOpen />} label="Tashrif" />
         <div className="relative -top-5">
           <button 
              onClick={() => setActiveTab('ai')}
@@ -164,7 +215,11 @@ export default function TashrifApp() {
           <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-text-muted dark:text-slate-500 uppercase tracking-tighter">Mesin</span>
         </div>
         <NavButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings />} label="Profil" />
-        <NavButton active={activeTab === 'access'} onClick={() => setActiveTab('access')} icon={<History />} label="Akses" />
+        {isAdmin ? (
+          <NavButton active={activeTab === 'admin'} onClick={() => setActiveTab('admin')} icon={<Save />} label="CMS" />
+        ) : (
+          <NavButton active={activeTab === 'access'} onClick={() => setActiveTab('access')} icon={<Zap />} label="Akses" />
+        )}
       </nav>
     </div>
   );

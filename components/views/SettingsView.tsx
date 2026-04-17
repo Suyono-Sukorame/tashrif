@@ -4,6 +4,7 @@ import { ChevronRight, User, Volume2, Zap, Download, Trash2, Moon, Sun } from 'l
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface SettingsViewProps {
   onBack: () => void;
@@ -12,6 +13,43 @@ interface SettingsViewProps {
 }
 
 export const SettingsView = ({ onBack, darkMode, setDarkMode }: SettingsViewProps) => {
+  const [user, setUser] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+      setLoading(false);
+    };
+    fetchUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogin = async () => {
+    if (!isSupabaseConfigured()) {
+       alert("Konfigurasi Supabase belum lengkap. Tambahkan URL dan Anon Key di berkas .env");
+       return;
+    }
+    // Simple email login for demo or use OAuth
+    const email = window.prompt("Masukkan Email:");
+    if (!email) return;
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    if (error) alert(error.message);
+    else alert("Tautan login telah dikirim ke email Anda!");
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 pb-20">
       <header className="flex items-center justify-between">
@@ -21,11 +59,22 @@ export const SettingsView = ({ onBack, darkMode, setDarkMode }: SettingsViewProp
 
       <section className="bg-white dark:bg-dark-card p-6 rounded-3xl border border-border dark:border-dark-border shadow-sm text-center">
         <div className="w-20 h-20 bg-stone-100 dark:bg-slate-800 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-white dark:border-slate-700 shadow-inner">
-          <User className="w-10 h-10 text-stone-400 dark:text-slate-500" />
+          {user?.user_metadata?.avatar_url ? (
+            <img src={user.user_metadata.avatar_url} className="w-full h-full rounded-full object-cover" alt="Profile" />
+          ) : (
+            <User className="w-10 h-10 text-stone-400 dark:text-slate-500" />
+          )}
         </div>
-        <h3 className="font-bold text-lg dark:text-dark-text">Hafizh Arab</h3>
-        <p className="text-xs text-text-muted dark:text-slate-400">ID: 884-291-NLP</p>
-        <div className="flex justify-center gap-4 mt-4">
+        <h3 className="font-bold text-lg dark:text-dark-text">{user ? (user.email?.split('@')[0]) : "Tamu (Offline)"}</h3>
+        <p className="text-xs text-text-muted dark:text-slate-400">{user ? user.email : "Belum terhubung ke Cloud Sync"}</p>
+        
+        {!user ? (
+          <Button onClick={handleLogin} variant="primary" className="mt-4 w-full py-3 rounded-2xl shadow-lg">Hubungkan Cloud Master</Button>
+        ) : (
+          <Button onClick={handleLogout} variant="ghost" className="mt-4 w-full py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20">Keluar Sesi</Button>
+        )}
+
+        <div className="flex justify-center gap-4 mt-6 pt-4 border-t border-border dark:border-slate-700">
           <div className="text-center">
              <div className="text-lg font-bold text-primary dark:text-emerald-400">42</div>
              <div className="text-[10px] uppercase font-bold text-text-muted dark:text-slate-400">Mastered</div>

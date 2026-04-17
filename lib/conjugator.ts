@@ -87,11 +87,20 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
 
     } else if (tense === 'present') {
       const prefixes = ['يَ', 'يَ', 'يَ', 'تَ', 'تَ', 'يَ', 'تَ', 'تَ', 'تَ', 'تَ', 'تَ', 'تَ', 'أَ', 'نَ'];
-      const suffixes = ['', 'انِ', 'ونَ', '', 'انِ', 'نَ', '', 'انِ', 'ونَ', 'ينَ', 'انِ', 'نَ', '', ''];
+      const suffixes = ['ُ', 'انِ', 'ونَ', 'ُ', 'انِ', 'نَ', 'ُ', 'انِ', 'ونَ', 'ينَ', 'انِ', 'نَ', 'ُ', 'ُ'];
       
       const prefixText = prefixes[index];
-      const stemText = basePresent.substring(1, basePresent.length - 1); 
-      const suffixText = (suffixes[index] || 'ُ');
+      // More robust stem extraction: remove the first character (prefix) and the last character (default vowel)
+      // and also handle the first vowel if it exists (like ya-K-tubu)
+      let stemText = basePresent.substring(1, basePresent.length - 1);
+      
+      // If stem starts with a vowel (fathah/dammah/kasrah), we might need to be careful
+      // For now, let's just make sure we don't double the prefix vowel
+      if (stemText.startsWith('َ') || stemText.startsWith('ُ') || stemText.startsWith('ِ')) {
+        stemText = stemText.substring(1);
+      }
+      
+      const suffixText = suffixes[index];
       result = prefixText + stemText + suffixText;
 
       parts.push({ text: prefixText, type: 'prefix' });

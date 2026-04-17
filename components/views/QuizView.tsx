@@ -41,6 +41,10 @@ export const QuizView = ({ verb, questions, onComplete }: QuizViewProps) => {
             attempts: 1,
             lastPracticed: Date.now()
           });
+
+          // Push to Cloud
+          const { pushProgressToCloud } = await import('@/lib/sync');
+          await pushProgressToCloud(verb.id, actualScore);
         }
         setShowResult(true);
       }
@@ -52,12 +56,12 @@ export const QuizView = ({ verb, questions, onComplete }: QuizViewProps) => {
   if (showResult) {
     return (
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6 pt-10">
-        <div className="w-24 h-24 bg-primary text-white rounded-full flex items-center justify-center mx-auto text-3xl font-bold border-8 border-primary-light">
+        <div className="w-24 h-24 bg-primary text-white rounded-full flex items-center justify-center mx-auto text-3xl font-bold border-8 border-primary-light dark:border-emerald-950">
           {Math.round((score / questions.length) * 100)}%
         </div>
         <div>
-          <h2 className="text-xl font-bold">Latihan Selesai!</h2>
-          <p className="text-sm text-text-muted mt-2">Anda berhasil menjawab {score} dari {questions.length} pertanyaan.</p>
+          <h2 className="text-xl font-bold dark:text-dark-text">Latihan Selesai!</h2>
+          <p className="text-sm text-text-muted dark:text-slate-400 mt-2">Anda berhasil menjawab {score} dari {questions.length} pertanyaan.</p>
         </div>
         <Button onClick={onComplete} variant="primary" className="w-full py-4">Kembali ke Engine</Button>
       </motion.div>
@@ -69,8 +73,8 @@ export const QuizView = ({ verb, questions, onComplete }: QuizViewProps) => {
       <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-text-muted">
          <span>Langkah {step + 1} dari {questions.length}</span>
       </div>
-      <Card className="p-8 border-border shadow-md bg-white">
-        <h3 className="text-lg font-bold text-left leading-relaxed text-text-dark border-l-4 border-accent pl-4">{questions[step].q}</h3>
+      <Card className="p-8 border-border dark:border-dark-border shadow-md bg-white dark:bg-dark-card">
+        <h3 className="text-lg font-bold text-left leading-relaxed text-text-dark dark:text-dark-text border-l-4 border-accent pl-4">{questions[step].q}</h3>
       </Card>
       <div className="grid grid-cols-1 gap-3">
         {questions[step].options.map((opt, i) => (
@@ -79,14 +83,14 @@ export const QuizView = ({ verb, questions, onComplete }: QuizViewProps) => {
             onClick={() => handleAnswer(opt)}
             disabled={selectedAnswer !== null}
             className={cn(
-              "p-4 rounded-xl border border-border text-right font-bold transition-all flex items-center justify-between gap-4",
-              selectedAnswer === opt ? (opt === questions[step].correct ? "bg-primary text-white border-primary" : "bg-red-50 text-red-700 border-red-200") : "bg-white hover:border-primary",
+              "p-4 rounded-xl border border-border dark:border-dark-border text-right font-bold transition-all flex items-center justify-between gap-4",
+              selectedAnswer === opt ? (opt === questions[step].correct ? "bg-primary text-white border-primary" : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900") : "bg-white dark:bg-dark-card dark:text-dark-text hover:border-primary",
               selectedAnswer !== null && opt === questions[step].correct ? "bg-primary text-white border-primary" : ""
             )}
             dir="rtl"
           >
             <span className="arabic-serif text-xl">{opt}</span>
-            <div className={cn("w-5 h-5 rounded-full border flex items-center justify-center shrink-0", selectedAnswer === opt ? "bg-white text-primary" : "border-stone-200")}>
+            <div className={cn("w-5 h-5 rounded-full border flex items-center justify-center shrink-0", selectedAnswer === opt ? "bg-white text-primary" : "border-stone-200 dark:border-slate-700")}>
                {selectedAnswer === opt && (opt === questions[step].correct ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3 text-red-500" />)}
             </div>
           </button>
