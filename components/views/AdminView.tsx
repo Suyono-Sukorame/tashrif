@@ -8,6 +8,7 @@ import { db } from '@/lib/db';
 
 import { TextLTR, TextRTL } from '../ui/Typography';
 import { InputLTR, InputRTL } from '../ui/Input';
+import { Badge } from '../ui/Badge';
 
 export const AdminView = () => {
   const [root, setRoot] = useState('');
@@ -56,7 +57,7 @@ export const AdminView = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-10">
       <div className="flex items-center justify-between">
         <TextLTR as="h2" className="text-xl font-bold dark:text-dark-text">Pusat Kendali CMS</TextLTR>
-        <div className="bg-primary/10 text-primary text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-primary/20">Admin Active</div>
+        <Badge variant="primary" size="sm">Admin Active</Badge>
       </div>
 
       <Card className="p-6 border-border dark:border-dark-border bg-white dark:bg-dark-card shadow-xl">
@@ -71,7 +72,7 @@ export const AdminView = () => {
               <TextLTR as="label" className="text-[10px] font-bold text-text-muted uppercase px-1">Akar Kata (Root)</TextLTR>
               <InputRTL 
                 value={root} onChange={(e) => setRoot(e.target.value)}
-                placeholder="ف - ع - ل" 
+                placeholder="ف - ع - L" 
                 className="text-center"
               />
             </div>
@@ -127,15 +128,15 @@ export const AdminView = () => {
          <div className="grid grid-cols-3 gap-3">
             <Card className="p-4 bg-white dark:bg-dark-card border border-border dark:border-dark-border text-center">
                <div className="text-xl font-bold text-primary">124</div>
-               <div className="text-[9px] text-text-muted uppercase font-bold">Total Verbs</div>
+               <Badge variant="secondary">Total Verbs</Badge>
             </Card>
             <Card className="p-4 bg-white dark:bg-dark-card border border-border dark:border-dark-border text-center">
                <div className="text-xl font-bold text-accent">18</div>
-               <div className="text-[9px] text-text-muted uppercase font-bold">Pending AI</div>
+               <Badge variant="warning">Pending AI</Badge>
             </Card>
             <Card className="p-4 bg-white dark:bg-dark-card border border-border dark:border-dark-border text-center">
                <div className="text-xl font-bold text-emerald-500">540</div>
-               <div className="text-[9px] text-text-muted uppercase font-bold">Syncs Today</div>
+               <Badge variant="success">Syncs Today</Badge>
             </Card>
          </div>
       </div>
