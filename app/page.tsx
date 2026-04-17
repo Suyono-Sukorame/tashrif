@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
-import { Search, BookOpen, Brain, Settings, History, Star, ChevronLeft, ChevronRight, Menu, Play, CheckCircle2, AlertCircle, TrendingUp, Award, Clock } from 'lucide-react';
+import { Search, BookOpen, Brain, Settings, History, Star, ChevronLeft, ChevronRight, Menu, Play, CheckCircle2, AlertCircle, TrendingUp, Award, Clock, User, Download, Trash2, Volume2, Layers, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db, seedVerbs, type Verb } from '@/lib/db';
 import { conjugate, DHAMIRS, type Tense } from '@/lib/conjugator';
@@ -40,7 +40,7 @@ const Button = ({ children, onClick, variant = 'primary', className, disabled, t
 // --- Main App ---
 
 export default function TashrifApp() {
-  const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'ai' | 'settings' | 'quiz' | 'guide'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'ai' | 'settings' | 'quiz' | 'guide' | 'access'>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVerb, setSelectedVerb] = useState<Verb | null>(null);
   const [verbs, setVerbs] = useState<Verb[]>([]);
@@ -210,6 +210,14 @@ export default function TashrifApp() {
           {activeTab === 'quiz' && selectedVerb && (
             <QuizView verb={selectedVerb} questions={quizQuestions} onComplete={() => setActiveTab('learn')} />
           )}
+
+          {activeTab === 'settings' && (
+            <SettingsView onBack={() => setActiveTab('home')} />
+          )}
+
+          {activeTab === 'access' && (
+            <AccessView onSelectVerb={handleVerbSelect} onBack={() => setActiveTab('home')} />
+          )}
         </AnimatePresence>
       </main>
 
@@ -226,7 +234,7 @@ export default function TashrifApp() {
           </button>
         </div>
         <NavButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings />} label="Registri" />
-        <NavButton active={false} onClick={() => {}} icon={<Menu />} label="Akses" />
+        <NavButton active={activeTab === 'access'} onClick={() => setActiveTab('access')} icon={<Zap />} label="Akses" />
       </nav>
     </div>
   );
@@ -530,6 +538,7 @@ function AIView() {
 }
 
 function GuideView({ onBack }: { onBack: () => void }) {
+  // ... (existing terms)
   const terms = [
     { title: 'Shahih', desc: 'Kata kerja yang semua huruf akarnya adalah huruf asli dan bukan huruf penyakit (Alif, Waw, Ya).' },
     { title: 'Mithal', desc: 'Kata kerja yang huruf pertama akarnya adalah huruf penyakit (biasanya Waw).' },
@@ -553,6 +562,169 @@ function GuideView({ onBack }: { onBack: () => void }) {
           </Card>
         ))}
       </div>
+    </motion.div>
+  );
+}
+
+function SettingsView({ onBack }: { onBack: () => void }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 pb-20">
+      <header className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Registri & Profil</h2>
+        <Button onClick={onBack} variant="ghost" className="p-2"><ChevronRight /></Button>
+      </header>
+
+      <section className="bg-white p-6 rounded-3xl border border-border shadow-sm text-center">
+        <div className="w-20 h-20 bg-stone-100 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-white shadow-inner">
+          <User className="w-10 h-10 text-stone-400" />
+        </div>
+        <h3 className="font-bold text-lg">Hafizh Arab</h3>
+        <p className="text-xs text-text-muted">ID: 884-291-NLP</p>
+        <div className="flex justify-center gap-4 mt-4">
+          <div className="text-center">
+             <div className="text-lg font-bold text-primary">42</div>
+             <div className="text-[10px] uppercase font-bold text-text-muted">Mastered</div>
+          </div>
+          <div className="w-[1px] bg-border h-8 self-center"></div>
+          <div className="text-center">
+             <div className="text-lg font-bold text-accent">128</div>
+             <div className="text-[10px] uppercase font-bold text-text-muted">Learning</div>
+          </div>
+        </div>
+      </section>
+
+      <div className="space-y-3">
+        <h4 className="text-[10px] font-bold uppercase text-text-muted tracking-widest px-2">Preferensi Belajar</h4>
+        <Card className="divide-y divide-border">
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Volume2 className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">Bicara Otomatis</span>
+            </div>
+            <div className="w-10 h-5 bg-primary rounded-full relative">
+              <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+            </div>
+          </div>
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Zap className="w-4 h-4 text-accent" />
+              <span className="text-sm font-medium">Mode Tantangan</span>
+            </div>
+            <div className="w-10 h-5 bg-stone-200 rounded-full relative">
+              <div className="absolute left-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="text-[10px] font-bold uppercase text-text-muted tracking-widest px-2">Data Pengguna</h4>
+        <Card className="divide-y divide-border">
+          <button className="w-full p-4 flex items-center justify-between hover:bg-stone-50 transition-colors">
+            <div className="flex items-center gap-3">
+              <Download className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-left">Ekspor Progres (.json)</span>
+            </div>
+          </button>
+          <button className="w-full p-4 flex items-center justify-between hover:bg-stone-50 transition-colors">
+             <div className="flex items-center gap-3">
+              <Trash2 className="w-4 h-4 text-red-500" />
+              <span className="text-sm font-medium text-red-500 text-left">Reset Leksikon</span>
+            </div>
+          </button>
+        </Card>
+      </div>
+    </motion.div>
+  );
+}
+
+function AccessView({ onSelectVerb, onBack }: { onSelectVerb: (v: Verb) => void, onBack: () => void }) {
+  const [favorites, setFavorites] = useState<Verb[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFavs = async () => {
+      const allFavs = await db.verbs.filter(v => v.isFavorite || false).toArray();
+      setFavorites(allFavs);
+      setLoading(false);
+    };
+    fetchFavs();
+  }, []);
+
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 pb-20">
+      <header className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+           <Layers className="w-5 h-5 text-primary" />
+           <h2 className="text-xl font-bold">Portal Akses Cepat</h2>
+        </div>
+        <Button onClick={onBack} variant="ghost" className="p-2"><ChevronRight /></Button>
+      </header>
+
+      <section className="grid grid-cols-2 gap-3">
+         <button className="p-4 bg-white border border-border rounded-2xl text-left hover:border-primary transition-all">
+            <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center mb-3">
+               <History className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="text-xs font-bold uppercase tracking-widest text-text-muted mb-1">Terakhir</div>
+            <div className="text-sm font-bold">Kilas Balik Sesi</div>
+         </button>
+         <button className="p-4 bg-white border border-border rounded-2xl text-left hover:border-accent transition-all">
+            <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center mb-3">
+               <Star className="w-4 h-4 text-orange-600" />
+            </div>
+            <div className="text-xs font-bold uppercase tracking-widest text-text-muted mb-1">Unggulan</div>
+            <div className="text-sm font-bold">Koleksi Bintang</div>
+         </button>
+      </section>
+
+      <div>
+        <h4 className="text-[10px] font-bold uppercase text-text-muted tracking-widest mb-3 px-1">Markah Kata Terpilih</h4>
+        {loading ? (
+          <div className="p-10 text-center text-xs text-text-muted">Sinkronisasi Metadata...</div>
+        ) : favorites.length > 0 ? (
+          <div className="grid grid-cols-1 gap-2">
+            {favorites.map(v => (
+               <Card key={v.id} className="hover:border-primary transition-all cursor-pointer">
+                  <div className="p-3 flex items-center justify-between" onClick={() => onSelectVerb(v)}>
+                    <div className="flex items-center gap-4 text-left w-full">
+                       <div className="w-9 h-9 bg-primary-light rounded-lg flex items-center justify-center text-md font-bold arabic-serif text-primary">
+                          {v.past[0]}
+                       </div>
+                       <div className="flex-1">
+                          <h3 className="text-sm font-bold text-text-dark text-right arabic-serif" dir="rtl">{v.past}</h3>
+                          <p className="text-[10px] text-text-muted mt-0.5">{v.translationId}</p>
+                       </div>
+                    </div>
+                  </div>
+               </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-border">
+             <Star className="w-8 h-8 text-stone-200 mx-auto mb-3" />
+             <p className="text-xs text-text-muted leading-relaxed">Belum ada kata kerja yang ditandai. Berikan bintang pada kata kerja untuk akses instan di sini.</p>
+          </div>
+        )}
+      </div>
+
+      <section className="bg-stone-900 rounded-2xl p-6 text-white">
+         <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-4">Informasi Sistem</h4>
+         <div className="space-y-3">
+            <div className="flex justify-between text-xs">
+               <span className="text-white/60">Engine Version</span>
+               <span className="font-mono">v2.8.4-stable</span>
+            </div>
+            <div className="flex justify-between text-xs">
+               <span className="text-white/60">Local Database</span>
+               <span className="font-mono">IndexedDB/Dexie</span>
+            </div>
+            <div className="flex justify-between text-xs">
+               <span className="text-white/60">Last Sync</span>
+               <span className="font-mono">Just now</span>
+            </div>
+         </div>
+      </section>
     </motion.div>
   );
 }
