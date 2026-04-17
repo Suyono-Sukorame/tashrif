@@ -79,7 +79,7 @@ export default function TashrifApp() {
              <h1 className="text-lg font-bold">Tashrif<span className="text-primary">Master</span></h1>
            </div>
           {activeTab === 'quiz' ? (
-            <div className="text-xs font-bold text-primary bg-primary-light px-2 py-1 rounded">Quiz Mode</div>
+            <div className="text-xs font-bold text-primary bg-primary-light px-2 py-1 rounded">Mode Kuis</div>
           ) : (
             <button className="p-2 rounded-full hover:bg-stone-100">
               <Menu className="w-5 h-5 text-text-muted" />
@@ -92,7 +92,7 @@ export default function TashrifApp() {
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors" />
             <input
               type="text"
-              placeholder="ابحث عن جذر أو فعل (Syrch root or verb)..."
+              placeholder="Cari akar atau kata kerja Arab..."
               className="w-full pr-10 pl-4 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary focus:bg-white transition-all text-right arabic-text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -116,18 +116,18 @@ export default function TashrifApp() {
                 <Card className="p-4 bg-white border-border">
                   <div className="flex items-center gap-2 mb-1">
                     <TrendingUp className="w-4 h-4 text-primary" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Mastery Index</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Indeks Penguasaan</span>
                   </div>
                   <div className="text-2xl font-bold text-text-dark">84%</div>
-                  <div className="text-[10px] text-text-muted">+5.2% session drift</div>
+                  <div className="text-[10px] text-text-muted">+5.2% drift sesi</div>
                 </Card>
                 <Card className="p-4 bg-white border-border">
                   <div className="flex items-center gap-2 mb-1">
                     <Award className="w-4 h-4 text-accent" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Verb Library</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Perpustakaan Kata</span>
                   </div>
                   <div className="text-2xl font-bold text-text-dark">1,480</div>
-                  <div className="text-[10px] text-text-muted">Level 5 Achieved</div>
+                  <div className="text-[10px] text-text-muted">Level 5 Tercapai</div>
                 </Card>
               </section>
 
@@ -135,9 +135,9 @@ export default function TashrifApp() {
                 <div className="flex items-center justify-between mb-3 ltr-text px-1">
                    <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-text-muted" />
-                      <h2 className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Verb Registry</h2>
+                      <h2 className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Registri Kata Kerja</h2>
                    </div>
-                  <Button variant="ghost" className="text-[11px] font-bold text-primary px-2 py-1">Export Library</Button>
+                  <Button variant="ghost" className="text-[11px] font-bold text-primary px-2 py-1">Ekspor Data</Button>
                 </div>
                 <div className="grid grid-cols-1 gap-2">
                   {verbs.filter(v => v.past.includes(searchQuery) || v.translationId.includes(searchQuery)).map((verb) => (
@@ -159,12 +159,12 @@ export default function TashrifApp() {
                 </div>
               </section>
 
-              <section className="bg-primary rounded-3xl p-6 text-white overflow-hidden relative">
+              <section className="bg-primary rounded-3xl p-6 text-white overflow-hidden relative shadow-lg shadow-primary/20">
                 <div className="relative z-10">
-                  <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-full mb-3 inline-block uppercase tracking-widest">Featured Lesson</span>
-                  <h3 className="text-xl font-bold mb-2 arabic-serif">تَصْرِيفُ المِثَال (Mithal Conjugation)</h3>
-                  <p className="text-sm text-white/80 mb-4">Learn how verbs starting with &quot;Waw&quot; change in the present tense.</p>
-                  <Button variant="secondary" className="w-full py-3">Start Learning Now</Button>
+                  <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full mb-3 inline-block uppercase tracking-widest">Modul Terpilih</span>
+                  <h3 className="text-xl font-bold mb-2 arabic-serif leading-tight">تَصْرِيفُ المِثَال (Logika Mithal)</h3>
+                  <p className="text-xs text-white/80 mb-5 leading-relaxed">Pelajari bagaimana huruf &quot;Waw&quot; dihilangkan dalam penggunaan bahasa Arab standar.</p>
+                  <Button variant="secondary" className="w-full py-3.5 border-none shadow-md">Pelajari Sekarang</Button>
                 </div>
                 <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
               </section>
@@ -187,8 +187,8 @@ export default function TashrifApp() {
 
       {/* Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-border px-8 py-3 flex items-center justify-between z-30 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
-        <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={<History />} label="Library" />
-        <NavButton active={activeTab === 'learn'} onClick={() => setActiveTab('learn')} icon={<BookOpen />} label="Engine" />
+        <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={<History />} label="Koleksi" />
+        <NavButton active={activeTab === 'learn'} onClick={() => setActiveTab('learn')} icon={<BookOpen />} label="Mesin" />
         <div className="relative -top-5">
           <button 
              onClick={() => setActiveTab('ai')}
@@ -197,8 +197,8 @@ export default function TashrifApp() {
             <Brain className="w-5 h-5" />
           </button>
         </div>
-        <NavButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings />} label="Registry" />
-        <NavButton active={false} onClick={() => {}} icon={<Menu />} label="Access" />
+        <NavButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings />} label="Registri" />
+        <NavButton active={false} onClick={() => {}} icon={<Menu />} label="Akses" />
       </nav>
     </div>
   );
@@ -225,10 +225,10 @@ function LearnView({ verb, onBack, onStartQuiz }: { verb: Verb, onBack: () => vo
   const conjugations = conjugate(verb.past, verb.present, activeTense);
 
   const tenses: { id: Tense, label: string }[] = [
-    { id: 'past', label: 'Past' },
-    { id: 'present', label: 'Present' },
-    { id: 'future', label: 'Future' },
-    { id: 'imperative', label: 'Amr' },
+    { id: 'past', label: 'Lampau' },
+    { id: 'present', label: 'Sekarang' },
+    { id: 'future', label: 'Mendatang' },
+    { id: 'imperative', label: 'Perintah' },
   ];
 
   const playAudio = async (text: string, index: number) => {
@@ -237,7 +237,7 @@ function LearnView({ verb, onBack, onStartQuiz }: { verb: Verb, onBack: () => vo
       const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
       const response = await ai.models.generateContent({
         model: "gemini-3.1-flash-tts-preview",
-        contents: [{ parts: [{ text: `Say clearly in Arabic: ${text}` }] }],
+        contents: [{ parts: [{ text: `Katakan dengan jelas dalam bahasa Arab: ${text}` }] }],
         config: {
           responseModalities: ["AUDIO"],
           speechConfig: {
@@ -295,8 +295,8 @@ function LearnView({ verb, onBack, onStartQuiz }: { verb: Verb, onBack: () => vo
 
       <div className="table-container bg-white rounded-xl border border-border overflow-hidden shadow-sm">
         <div className="grid grid-cols-12 bg-background border-b border-border py-2 text-[10px] font-bold uppercase text-text-muted tracking-widest px-4">
-          <div className="col-span-4 border-r border-border pr-2">Pronoun</div>
-          <div className="col-span-8 text-left pl-4">Conjugation Engine</div>
+          <div className="col-span-4 border-r border-border pr-2">Kata Ganti</div>
+          <div className="col-span-8 text-left pl-4">Mesin Konjugasi</div>
         </div>
         <div className="divide-y divide-border h-[300px] overflow-y-auto">
           {conjugations.map((c, i) => (
@@ -322,8 +322,8 @@ function LearnView({ verb, onBack, onStartQuiz }: { verb: Verb, onBack: () => vo
       </div>
       
       <div className="pb-8 grid grid-cols-2 gap-3">
-        <Button onClick={onStartQuiz} variant="primary" className="py-3.5 shadow-lg shadow-primary/10">Take Drill</Button>
-        <Button variant="ghost" className="py-3.5 bg-white border border-border">Save Rules</Button>
+        <Button onClick={onStartQuiz} variant="primary" className="py-3.5 shadow-lg shadow-primary/10">Latihan</Button>
+        <Button variant="ghost" className="py-3.5 bg-white border border-border">Simpan Rumus</Button>
       </div>
     </motion.div>
   );
@@ -337,7 +337,7 @@ function QuizView({ verb, onComplete }: { verb: Verb, onComplete: () => void }) 
 
   const questions = [
     { q: `Sempurnakan tasrif '${verb.past}' untuk dhamir 'أنتَ' (Madi)?`, options: [conjugate(verb.past, verb.present, 'past')[6].value, 'كَاتِب', 'يَكْتُبُ', 'تَقَعْ'], correct: conjugate(verb.past, verb.present, 'past')[6].value },
-    { q: `Bentuk Mudhari' untuk dhamir 'نحن' adalah?`, options: [conjugate(verb.past, verb.present, 'present')[13].value, 'أَقَعُ', 'يَقَعُون', 'قَعْ'], correct: conjugate(verb.past, verb.present, 'present')[13].value },
+    { q: `Apa bentuk Mudhari' untuk dhamir 'نحن'?`, options: [conjugate(verb.past, verb.present, 'present')[13].value, 'أَقَعُ', 'يَقَعُون', 'قَعْ'], correct: conjugate(verb.past, verb.present, 'present')[13].value },
     { q: `Apa jenis fi'il dari '${verb.past}':`, options: ['Shahih', 'Mithal', 'Ajwaf', 'Naqis'], correct: verb.type.charAt(0).toUpperCase() + verb.type.slice(1) }
   ];
 
@@ -373,7 +373,7 @@ function QuizView({ verb, onComplete }: { verb: Verb, onComplete: () => void }) 
   return (
     <div className="space-y-6 pt-4">
       <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-text-muted">
-         <span>Step {step + 1} of {questions.length}</span>
+         <span>Langkah {step + 1} dari {questions.length}</span>
       </div>
       <Card className="p-8 border-border shadow-md bg-white">
         <h3 className="text-lg font-bold text-center leading-relaxed ltr-text">{questions[step].q}</h3>
@@ -413,7 +413,7 @@ function AIView() {
         model: "gemini-3-flash-preview",
         contents: `Analyze the verb: ${input}`,
         config: {
-            systemInstruction: "You are an expert Arabic grammarian. Analyze the given verb in Arabic. Provide root, wazan, type (Shahih/Mithal/etc), and mean in English. Return JSON format.",
+            systemInstruction: "Anda adalah pakar tata bahasa Arab. Analisis kata kerja yang diberikan dalam bahasa Arab. Sediakan akar (root), wazan, tipe (Shahih/Mithal/dll), dan arti dalam bahasa Indonesia. Kembalikan dalam format JSON.",
             responseMimeType: "application/json"
         }
       });
@@ -436,14 +436,14 @@ function AIView() {
         <div className="w-16 h-16 bg-primary-light rounded-xl flex items-center justify-center mx-auto mb-4 border border-emerald-100">
           <Brain className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-xl font-bold">Grammar Intelligence Engine</h2>
-        <p className="text-xs text-text-muted mt-1 uppercase tracking-wider font-bold">Enterprise NLP Module v2.4</p>
+        <h2 className="text-xl font-bold">Mesin Kecerdasan Tata Bahasa</h2>
+        <p className="text-xs text-text-muted mt-1 uppercase tracking-wider font-bold">Modul NLP Enterprise v2.4</p>
       </div>
 
       <Card className="p-6 border-border shadow-md">
-        <div className="text-[11px] font-bold text-text-muted uppercase mb-3 tracking-widest">Input Query</div>
+        <div className="text-[11px] font-bold text-text-muted uppercase mb-3 tracking-widest">Input Pertanyaan</div>
         <textarea
-          placeholder="Input root characters or full verb phrase..."
+          placeholder="Masukkan huruf akar atau frase kata kerja lengkap..."
           className="w-full h-32 p-4 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary resize-none transition-all arabic-text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -454,7 +454,7 @@ function AIView() {
           onClick={handleAnalyse}
           disabled={isAnalysing}
         >
-          {isAnalysing ? "Processing Lexicon..." : "Dispatch Query to Engine"}
+          {isAnalysing ? "Memproses Leksikon..." : "Kirim Pertanyaan ke Mesin"}
         </Button>
       </Card>
 

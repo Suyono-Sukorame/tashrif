@@ -14,20 +14,20 @@ export interface ConjugationResult {
 }
 
 export const DHAMIRS = [
-  { ar: 'هُوَ', en: 'He (Sing. M)', pronouns: ['huwa'] },
-  { ar: 'هُمَا', en: 'They (Dual M)', pronouns: ['huma', 'm'] },
-  { ar: 'هُمْ', en: 'They (Plur. M)', pronouns: ['hum'] },
-  { ar: 'هِيَ', en: 'She (Sing. F)', pronouns: ['hiya'] },
-  { ar: 'هُمَا (م)', en: 'They (Dual F)', pronouns: ['huma', 'f'] },
-  { ar: 'هُنَّ', en: 'They (Plur. F)', pronouns: ['hunna'] },
-  { ar: 'أَنْتَ', en: 'You (Sing. M)', pronouns: ['anta'] },
-  { ar: 'أَنْتُمَا', en: 'You (Dual M)', pronouns: ['antuma', 'm'] },
-  { ar: 'أَنْتُمْ', en: 'You (Plur. M)', pronouns: ['antum'] },
-  { ar: 'أَنْتِ', en: 'You (Sing. F)', pronouns: ['anti'] },
-  { ar: 'أَنْتُمَا (م)', en: 'You (Dual F)', pronouns: ['antuma', 'f'] },
-  { ar: 'أَنْتُنَّ', en: 'You (Plur. F)', pronouns: ['antunna'] },
-  { ar: 'أَنَا', en: 'I', pronouns: ['ana'] },
-  { ar: 'نَحْنُ', en: 'We', pronouns: ['nahnu'] },
+  { ar: 'هُوَ', en: 'Dia (Laki-laki)', pronouns: ['huwa'] },
+  { ar: 'هُمَا', en: 'Mereka Berdua (L)', pronouns: ['huma', 'm'] },
+  { ar: 'هُمْ', en: 'Mereka (L)', pronouns: ['hum'] },
+  { ar: 'هِيَ', en: 'Dia (Perempuan)', pronouns: ['hiya'] },
+  { ar: 'هُمَا (م)', en: 'Mereka Berdua (P)', pronouns: ['huma', 'f'] },
+  { ar: 'هُنَّ', en: 'Mereka (P)', pronouns: ['hunna'] },
+  { ar: 'أَنْتَ', en: 'Kamu (L)', pronouns: ['anta'] },
+  { ar: 'أَنْتُمَا', en: 'Kalian Berdua (L)', pronouns: ['antuma', 'm'] },
+  { ar: 'أَنْتُمْ', en: 'Kalian (L)', pronouns: ['antum'] },
+  { ar: 'أَنْتِ', en: 'Kamu (P)', pronouns: ['anti'] },
+  { ar: 'أَنْتُمَا (م)', en: 'Kalian Berdua (P)', pronouns: ['antuma', 'f'] },
+  { ar: 'أَنْتُنَّ', en: 'Kalian (P)', pronouns: ['antunna'] },
+  { ar: 'أَنَا', en: 'Saya', pronouns: ['ana'] },
+  { ar: 'نَحْنُ', en: 'Kami', pronouns: ['nahnu'] },
 ];
 
 /**
