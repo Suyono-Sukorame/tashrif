@@ -58,29 +58,7 @@ export const HomeView = ({ searchQuery, setSearchQuery, verbs, handleVerbSelect,
             <Clock className="w-4 h-4 text-text-muted dark:text-slate-400" />
             <h2 className="text-[11px] font-bold text-text-muted dark:text-slate-400 uppercase tracking-wider">Pilih Kata Kerja</h2>
           </TextLTR>
-          <div className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary-light rounded-full">{verbs.length} Kata</div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="relative mb-4">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
-            <Search className="w-4 h-4" />
-          </div>
-          <input 
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari arab, akar kata, atau arti..."
-            className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-dark-card border border-border dark:border-dark-border rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary/10 outline-none transition-all dark:text-dark-text shadow-sm"
-          />
-          {searchQuery && (
-            <button 
-              onClick={() => setSearchQuery('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-primary hover:text-primary-dark"
-            >
-              Hapus
-            </button>
-          )}
+          <div className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary-light rounded-full">{filteredVerbs.length} Kata</div>
         </div>
 
         <div className="grid grid-cols-1 gap-2">

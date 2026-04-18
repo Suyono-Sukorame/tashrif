@@ -20,6 +20,18 @@ export const AdminView = () => {
   const [bulkInput, setBulkInput] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [verbsList, setVerbsList] = useState<any[]>([]);
+
+  // Fetch Verbs for List
+  const fetchVerbs = async () => {
+    const { data } = await supabase.from('verbs').select('*').order('created_at', { ascending: false });
+    if (data) setVerbsList(data);
+  };
+
+  React.useEffect(() => {
+    fetchVerbs();
+  }, []);
+
   const handleAddVerb = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -61,6 +73,7 @@ export const AdminView = () => {
 
       toast.success('Leksikon baru berhasil dipublikasikan!');
       setRoot(''); setPast(''); setPresent(''); setTranslation('');
+      fetchVerbs(); // Refresh list
     } catch (error: any) {
       console.error("Catch Error:", error);
       toast.error(error.message || "Terjadi kesalahan saat menyimpan");
@@ -114,8 +127,9 @@ export const AdminView = () => {
         await db.verbs.add(item);
       }
 
-      toast.success(`${formattedData.length} kata kerja berhasil diimpor!`);
+      toast.success(`${formattedData.length} leksikon berhasil diimpor!`);
       setBulkInput('');
+      fetchVerbs(); // Refresh list
     } catch (error: any) {
       toast.error("Gagal impor: " + error.message);
     } finally {
@@ -123,11 +137,43 @@ export const AdminView = () => {
     }
   };
 
+  const handleDeleteVerb = async (id: number) => {
+    if (!confirm('Hapus leksikon ini?')) return;
+    try {
+      const { error } = await supabase.from('verbs').delete().eq('id', id);
+      if (error) throw error;
+      await db.verbs.delete(id);
+      toast.success('Leksikon dihapus');
+      fetchVerbs();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!confirm('PERINGATAN: Hapus SELURUH database cloud dan lokal? Tindakan ini tidak bisa dibatalkan.')) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('verbs').delete().neq('id', 0);
+      if (error) throw error;
+      await db.verbs.clear();
+      toast.success('Database berhasil dikosongkan!');
+      fetchVerbs();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-10">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <TextLTR as="h2" className="text-xl font-bold dark:text-dark-text">Pusat Kendali CMS</TextLTR>
-        <Badge variant="primary" size="sm">Admin Active</Badge>
+        <div className="flex gap-2">
+          <Button onClick={handleClearAll} variant="ghost" className="text-[10px] text-red-500 font-bold border border-red-100 dark:border-red-900/30">RESET DB</Button>
+          <Badge variant="primary" size="sm">Admin Active</Badge>
+        </div>
       </div>
 
       <Card className="p-6 border-border dark:border-dark-border bg-white dark:bg-dark-card shadow-xl">
@@ -231,22 +277,30 @@ export const AdminView = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-3">
-         <TextLTR as="h4" className="text-[10px] font-bold uppercase text-text-muted tracking-widest px-1">Statistik Konten</TextLTR>
-         <div className="grid grid-cols-3 gap-3">
-            <Card className="p-4 bg-white dark:bg-dark-card border border-border dark:border-dark-border text-center">
-               <div className="text-xl font-bold text-primary">124</div>
-               <Badge variant="secondary">Total Verbs</Badge>
+      <div className="space-y-3">
+        <TextLTR as="h4" className="text-[10px] font-bold uppercase text-text-muted tracking-widest px-1">Daftar Leksikon Aktif ({verbsList.length})</TextLTR>
+        <div className="space-y-2">
+          {verbsList.map((v) => (
+            <Card key={v.id} className="p-4 bg-white dark:bg-dark-card border-border dark:border-dark-border flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-stone-50 dark:bg-slate-900 rounded-lg flex items-center justify-center text-primary font-bold">{v.root[0]}</div>
+                <div>
+                  <TextRTL className="text-sm font-bold dark:text-dark-text">{v.past} - {v.present}</TextRTL>
+                  <TextLTR className="text-[10px] text-text-muted">{v.translation}</TextLTR>
+                </div>
+              </div>
+              <button 
+                onClick={() => handleDeleteVerb(v.id)}
+                className="p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </Card>
-            <Card className="p-4 bg-white dark:bg-dark-card border border-border dark:border-dark-border text-center">
-               <div className="text-xl font-bold text-accent">18</div>
-               <Badge variant="warning">Pending AI</Badge>
-            </Card>
-            <Card className="p-4 bg-white dark:bg-dark-card border border-border dark:border-dark-border text-center">
-               <div className="text-xl font-bold text-emerald-500">540</div>
-               <Badge variant="success">Syncs Today</Badge>
-            </Card>
-         </div>
+          ))}
+          {verbsList.length === 0 && (
+            <div className="text-center py-10 opacity-50 text-[10px] font-bold uppercase tracking-widest">Belum ada data di cloud</div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
