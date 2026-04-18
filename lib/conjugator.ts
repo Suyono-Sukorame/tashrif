@@ -56,17 +56,36 @@ function detectBina(past: string, root?: string): BinaType {
 }
 
 /**
+ * Extracts 3 root letters from a past tense verb
+ */
+function getRoots(past: string): [string, string, string] {
+  const clean = past.replace(/[َُِّْ]/g, "");
+  return [clean.charAt(0), clean.charAt(1), clean.charAt(2)];
+}
+
+/**
  * Generates horizontal summary (Tashrif Ishtilahy)
  */
 export function getIshtilahy(verb: any): IshtilahyResult[] {
+  const [f, a, l] = getRoots(verb.past || "");
+  const bina = detectBina(verb.past || "");
+
+  const masdar = verb.masdar && verb.masdar !== '-' ? verb.masdar : `${f}${a}ْ${l}ً`;
+  const fail = verb.activeParticiple && verb.activeParticiple !== '-' ? verb.activeParticiple : `${f}َاعِلٌ`;
+  const maful = verb.passiveParticiple && verb.passiveParticiple !== '-' ? verb.passiveParticiple : `مَ${f}ْ${a}ُ${l}ٌ`;
+  
+  // Isim Makan/Zaman Pattern: Maf'ilun for Mithal, Maf'alun for others
+  const makan = verb.nounPlaceTime && verb.nounPlaceTime !== '-' ? verb.nounPlaceTime : 
+               (bina === 'mithal' ? `مَ${f}ْ${a}ِ${l}ٌ` : `مَ${f}ْ${a}َ${l}ٌ`);
+
   return [
     { title: 'Madhi', value: verb.past, type: 'past' },
     { title: 'Mudhari', value: verb.present, type: 'present' },
-    { title: 'Masdar', value: verb.masdar || '-', type: 'masdar' },
-    { title: 'Fail', value: verb.activeParticiple || '-', type: 'activeParticiple' },
-    { title: 'Maf\'ul', value: verb.passiveParticiple || '-', type: 'passiveParticiple' },
+    { title: 'Masdar', value: masdar, type: 'masdar' },
+    { title: 'Fail', value: fail, type: 'activeParticiple' },
+    { title: 'Maf\'ul', value: maful, type: 'passiveParticiple' },
     { title: 'Amr', value: verb.past ? conjugate(verb.past, verb.present, 'imperative')[6].value : '-', type: 'imperative' },
-    { title: 'Makan/Zaman', value: verb.nounPlaceTime || '-', type: 'nounPlaceTime' },
+    { title: 'Makan/Zaman', value: makan, type: 'nounPlaceTime' },
   ];
 }
 
@@ -149,12 +168,17 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
        if (index >= 6 && index <= 11) {
           const presentMajzum = conjugate(past, present, 'present_majzum');
           const p = presentMajzum[index];
-          // Remove prefix to get imperative
+          // Remove prefix (يَ/تَ/أَ/نَ) to get the stem
           result = p.value.substring(2);
           
-          // Add Alif if needed (if it starts with sukun)
-          if (!result.startsWith('َ') && !result.startsWith('ُ') && !result.startsWith('ِ')) {
-             result = 'ا' + result;
+          // Detect if the first letter of the stem has a harakat
+          // If it doesn't have fatha/damma/kasrah at index 1, it's sakin and needs Alif
+          const hasHarakat = result.length > 1 && ['َ', 'ُ', 'ِ'].includes(result.charAt(1));
+          
+          if (!hasHarakat) {
+             // Add Alif with proper harakat (simplified to Kasrah/Dammah)
+             const alifHarakat = result.includes('ُ') ? 'اُ' : 'اِ';
+             result = alifHarakat + result;
           }
 
           parts.push({ text: result, type: 'root' });

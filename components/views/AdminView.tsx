@@ -96,6 +96,10 @@ export const AdminView = () => {
         wazan: item.wazan || 'Fa\'ala - Yaf\'ulu',
         translationId: item.meaning || item.translationId,
         type: item.type || 'shahih',
+        masdar: item.masdar || null,
+        activeParticiple: item.active_participle || item.fail || null,
+        passiveParticiple: item.passive_participle || item.maful || null,
+        nounPlaceTime: item.noun_place_time || item.makan || null,
         forms: item.forms || null,
         examples: item.examples || null,
         isFavorite: false,
@@ -111,6 +115,10 @@ export const AdminView = () => {
           wazan: d.wazan,
           translation: d.translationId,
           type: d.type,
+          masdar: d.masdar,
+          active_participle: d.activeParticiple,
+          passive_participle: d.passiveParticiple,
+          noun_place_time: d.nounPlaceTime,
           forms: d.forms,
           examples: d.examples,
           is_favorite: d.isFavorite,
@@ -260,8 +268,9 @@ export const AdminView = () => {
               {`[
   { 
     "root": "k-t-b", "past": "كتب", "present": "يكتب", "meaning": "Menulis",
+    "masdar": "كِتَابَةً", "fail": "كَاتِبٌ", "maful": "مَكْتُوبٌ", "makan": "مَكْتَبٌ",
     "forms": [ { "dhamir": "هُوَ", "past": "كتب", "present": "يكتب", ... } ],
-    "examples": [ { "ar": "...", "id": "..." } ]
+    "examples": [ { "ar": "كتب الولد الدرس", "id": "Anak itu menulis pelajaran" } ]
   }
 ]`}
             </pre>
