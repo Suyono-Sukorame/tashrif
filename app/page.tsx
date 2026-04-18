@@ -9,6 +9,7 @@ import { type ActiveTab, type QuizQuestion } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { VerbCard } from '@/components/VerbCard';
+import { toast } from 'sonner';
 
 // Components
 import { Header } from '@/components/Header';
