@@ -13,6 +13,7 @@ interface HomeViewProps {
   setSearchQuery: (q: string) => void;
   verbs: Verb[];
   handleVerbSelect: (verb: Verb) => void;
+  onToggleFavorite: (verb: Verb) => void;
   setActiveTab: (tab: ActiveTab) => void;
   stats: { mastery: number, count: number };
   title: string;
@@ -21,7 +22,7 @@ interface HomeViewProps {
 }
 
 export const HomeView = ({ 
-  searchQuery, setSearchQuery, verbs, handleVerbSelect, 
+  searchQuery, setSearchQuery, verbs, handleVerbSelect, onToggleFavorite,
   setActiveTab, stats, title, icon, showStats = true 
 }: HomeViewProps) => {
   const filteredVerbs = verbs.filter(v => 
@@ -72,7 +73,12 @@ export const HomeView = ({
         <div className="grid grid-cols-1 gap-2">
           {filteredVerbs.length > 0 ? (
             filteredVerbs.map((verb) => (
-              <VerbCard key={verb.id} verb={verb} onClick={handleVerbSelect} />
+              <VerbCard 
+                key={verb.id} 
+                verb={verb} 
+                onClick={handleVerbSelect} 
+                onToggleFavorite={onToggleFavorite}
+              />
             ))
           ) : (
             <div className="py-12 text-center space-y-3 bg-stone-50/50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-border dark:border-slate-800">

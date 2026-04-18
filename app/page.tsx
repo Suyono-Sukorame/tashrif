@@ -114,6 +114,26 @@ export default function TashrifApp() {
     setActiveTab('quiz');
   };
 
+  const handleToggleFavorite = async (verb: Verb) => {
+    if (!verb.id) return;
+    const newFav = !verb.isFavorite;
+    
+    // 1. Update State (Optimistic)
+    setVerbs(prev => prev.map(v => v.id === verb.id ? { ...v, isFavorite: newFav } : v));
+    
+    // 2. Update Local DB
+    await db.verbs.update(verb.id, { isFavorite: newFav });
+
+    // 3. Push to Cloud
+    const { pushFavoriteToCloud } = await import('@/lib/sync');
+    pushFavoriteToCloud(verb.id, newFav).catch(err => {
+      console.error("Sync Error:", err);
+      toast.error("Gagal sinkronisasi koleksi ke cloud");
+    });
+
+    toast.success(newFav ? "Ditambahkan ke Koleksi" : "Dihapus dari Koleksi");
+  };
+
   if (loading) return <div className="h-screen flex items-center justify-center bg-stone-50 text-xs font-bold uppercase tracking-widest text-text-muted">Inisialisasi Leksikon...</div>;
   if (!session) return <AuthView />;
 
@@ -139,7 +159,7 @@ export default function TashrifApp() {
           {selectedVerb ? (
             <LearnView 
               key="detail" 
-              verb={selectedVerb} 
+              verb={verbs.find(v => v.id === selectedVerb.id) || selectedVerb} 
               onBack={() => setSelectedVerb(null)} 
               onStartQuiz={() => startQuiz(selectedVerb)} 
             />
@@ -154,6 +174,7 @@ export default function TashrifApp() {
                   setSearchQuery={setSearchQuery}
                   verbs={verbs}
                   handleVerbSelect={handleVerbSelect}
+                  onToggleFavorite={handleToggleFavorite}
                   setActiveTab={setActiveTab}
                   stats={stats}
                 />
@@ -169,6 +190,7 @@ export default function TashrifApp() {
                   setSearchQuery={setSearchQuery}
                   verbs={verbs.filter(v => v.isFavorite)}
                   handleVerbSelect={handleVerbSelect}
+                  onToggleFavorite={handleToggleFavorite}
                   setActiveTab={setActiveTab}
                   stats={stats}
                 />
