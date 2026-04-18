@@ -29,15 +29,13 @@ export const VerbCard = ({ verb, onClick, onToggleFavorite }: VerbCardProps) => 
       lastTap.current = 0; // Reset
     } else {
       lastTap.current = now;
-      // Single tap is handled by the main div click if needed, 
-      // but we wait to see if it's a double tap
     }
   };
 
   return (
     <Card className="hover:bg-primary-light dark:hover:bg-emerald-950/30 transition-colors cursor-pointer group active:scale-[0.98] border-border dark:border-dark-border relative overflow-hidden select-none">
-      <div className="p-1 flex items-center gap-1">
-        {/* Larger Hit Area for Star (Option 1) */}
+      <div className="p-2 flex items-center gap-2">
+        {/* Larger Hit Area for Star */}
         <button 
           onClick={(e) => {
             e.stopPropagation();
@@ -49,12 +47,11 @@ export const VerbCard = ({ verb, onClick, onToggleFavorite }: VerbCardProps) => 
           <Star className={cn("w-5 h-5 transition-transform", verb.isFavorite ? "fill-accent text-accent scale-110" : "text-stone-300 dark:text-slate-600")} />
         </button>
 
-        {/* Main Content with Double Tap (Option 3) */}
+        {/* Main Content with Double Tap */}
         <div 
-          className="flex-1 overflow-hidden flex items-center gap-3 py-3 pr-4" 
+          className="flex-1 overflow-hidden flex items-center gap-4 py-4 pr-5 pl-2" 
           onClick={(e) => {
             handleTouch(e);
-            // We delay the actual navigation slightly to allow double-tap to trigger
             setTimeout(() => {
               if (Date.now() - lastTap.current >= 300 && lastTap.current !== 0) {
                 onClick(verb);
@@ -62,22 +59,22 @@ export const VerbCard = ({ verb, onClick, onToggleFavorite }: VerbCardProps) => 
             }, 300);
           }}
         >
-          <div className="w-10 h-10 bg-white dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg flex items-center justify-center text-lg font-bold text-primary dark:text-emerald-400 shrink-0">
+          <div className="w-11 h-11 bg-white dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl flex items-center justify-center text-xl font-bold text-primary dark:text-emerald-400 shrink-0 shadow-sm">
             <TextRTL>{verb.past[0]}</TextRTL>
           </div>
           
           <div className="flex-1 overflow-hidden text-right">
-            <div className="flex items-center justify-end gap-2 mb-1">
+            <div className="flex items-center justify-end gap-2 mb-1.5">
               <TextLTR className="flex-shrink-0">
                 {verb.isMazid && (
                   <span className="text-[8px] font-bold bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-tighter">Mazid</span>
                 )}
               </TextLTR>
-              <TextRTL className="text-md font-bold text-text-dark dark:text-dark-text leading-tight truncate">
+              <TextRTL className="text-lg font-bold text-text-dark dark:text-dark-text leading-tight truncate">
                 {verb.past} – {verb.present}
               </TextRTL>
             </div>
-            <TextLTR className="text-[11px] text-text-muted dark:text-slate-400 font-medium truncate text-left">
+            <TextLTR className="text-[12px] text-text-muted dark:text-slate-400 font-medium truncate text-left pl-1">
               {verb.translationId}
             </TextLTR>
           </div>
@@ -92,7 +89,7 @@ export const VerbCard = ({ verb, onClick, onToggleFavorite }: VerbCardProps) => 
               exit={{ opacity: 0, scale: 0.5, y: -20 }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
             >
-              <Star className="w-16 h-16 fill-accent text-accent shadow-2xl drop-shadow-lg" />
+              <Star className="w-20 h-20 fill-accent text-accent shadow-2xl drop-shadow-lg" />
             </motion.div>
           )}
         </AnimatePresence>
