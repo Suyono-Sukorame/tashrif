@@ -139,28 +139,36 @@ export const AdminView = () => {
 
   const handleDeleteVerb = async (id: number) => {
     if (!confirm('Hapus leksikon ini?')) return;
+    
+    // Optimistic Update: Langsung hapus dari tampilan
+    setVerbsList(prev => prev.filter(v => v.id !== id));
+
     try {
       const { error } = await supabase.from('verbs').delete().eq('id', id);
       if (error) throw error;
       await db.verbs.delete(id);
       toast.success('Leksikon dihapus');
-      fetchVerbs();
     } catch (error: any) {
       toast.error(error.message);
+      fetchVerbs(); // Ambil ulang jika gagal
     }
   };
 
   const handleClearAll = async () => {
     if (!confirm('PERINGATAN: Hapus SELURUH database cloud dan lokal? Tindakan ini tidak bisa dibatalkan.')) return;
+    
+    // Optimistic Update: Langsung kosongkan tampilan
+    setVerbsList([]);
     setLoading(true);
+
     try {
       const { error } = await supabase.from('verbs').delete().neq('id', 0);
       if (error) throw error;
       await db.verbs.clear();
       toast.success('Database berhasil dikosongkan!');
-      fetchVerbs();
     } catch (error: any) {
       toast.error(error.message);
+      fetchVerbs(); // Ambil ulang jika gagal
     } finally {
       setLoading(false);
     }
