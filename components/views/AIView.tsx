@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Brain, CheckCircle2, Loader2, Send } from 'lucide-react';
 import { Card } from '../ui/Card';
@@ -152,7 +153,7 @@ export const AIView = () => {
                         isFavorite: false,
                         createdAt: Date.now()
                       });
-                      alert("Berhasil disimpan ke Koleksi!");
+                      toast.success("Berhasil disimpan ke Koleksi!");
                     }}
                     variant="secondary" 
                     className="w-full py-3 rounded-xl border border-primary/20"

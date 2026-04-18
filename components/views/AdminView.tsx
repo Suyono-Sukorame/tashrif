@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Plus, Save, Trash2, Sparkles, BookOpen } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -44,10 +45,10 @@ export const AdminView = () => {
       // 2. Sync to Local Dexie
       await db.verbs.add(newVerb);
 
-      alert('Kata kerja berhasil ditambahkan ke Cloud!');
+      toast.success('Kata kerja berhasil ditambahkan ke Cloud!');
       setRoot(''); setPast(''); setPresent(''); setTranslation('');
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

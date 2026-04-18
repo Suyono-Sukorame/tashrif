@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { ChevronRight, Play } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -164,8 +165,8 @@ export const LearnView = ({ verb, onBack, onStartQuiz }: LearnViewProps) => {
               const { pushFavoriteToCloud } = await import('@/lib/sync');
               await pushFavoriteToCloud(verb.id, newFav);
 
-              alert(newFav ? "Disimpan ke Koleksi" : "Dihapus dari Koleksi");
-              window.location.reload();
+              toast.success(newFav ? "Disimpan ke Koleksi" : "Dihapus dari Koleksi");
+              setTimeout(() => window.location.reload(), 1000);
             }
           }}
           variant="ghost" 

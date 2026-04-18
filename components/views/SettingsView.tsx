@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { ChevronRight, User, Volume2, Zap, Download, Trash2, Moon, Sun } from 'lucide-react';
 import { Card } from '../ui/Card';
@@ -35,15 +36,15 @@ export const SettingsView = ({ onBack, darkMode, setDarkMode }: SettingsViewProp
 
   const handleLogin = async () => {
     if (!isSupabaseConfigured()) {
-       alert("Konfigurasi Supabase belum lengkap. Tambahkan URL dan Anon Key di berkas .env");
+       toast.error("Konfigurasi Supabase belum lengkap. Tambahkan URL dan Anon Key di berkas .env");
        return;
     }
     // Simple email login for demo or use OAuth
     const email = window.prompt("Masukkan Email:");
     if (!email) return;
     const { error } = await supabase.auth.signInWithOtp({ email });
-    if (error) alert(error.message);
-    else alert("Tautan login telah dikirim ke email Anda!");
+    if (error) toast.error(error.message);
+    else toast.success("Tautan login telah dikirim ke email Anda!");
   };
 
   const handleLogout = async () => {

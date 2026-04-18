@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Github } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -27,9 +28,9 @@ export const AuthView = () => {
         }
       });
       if (error) throw error;
-      alert('Tautan ajaib telah dikirim ke email Anda!');
+      toast.success('Tautan ajaib telah dikirim ke email Anda!');
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -45,7 +46,7 @@ export const AuthView = () => {
       });
       if (error) throw error;
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message);
     }
   };
 
@@ -59,10 +60,10 @@ export const AuthView = () => {
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        alert('Cek email Anda untuk konfirmasi pendaftaran!');
+        toast.success('Cek email Anda untuk konfirmasi pendaftaran!');
       }
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
