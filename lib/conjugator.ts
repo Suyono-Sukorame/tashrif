@@ -108,45 +108,43 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
       ];
       
       const [f, a, l] = getRoots(past);
+      const weakLetter = past.endsWith("ا") ? "و" : "ي";
+      const isAjwafWawi = present.includes('ُ');
       let stem = '';
-      let suffix = suffixes[index];
+      let suffix = '';
 
-      // I'LAL RULES FOR PAST
       if (bina === "ajwaf" && index >= 5) {
-        // e.g. Qala -> Qul-tu, Ba'a -> Bi'-tu
-        // Heuristic: Use Dammah for Wawi (Qala) and Kasrah for Ya'i (Ba'a)
-        // For simplicity in this version, we use Dammah if present contains 'u'
-        const v = present.includes('ُ') ? 'ُ' : 'ِ';
-        stem = f + v + l + "ْ";
+        const v = isAjwafWawi ? 'ُ' : 'ِ';
+        stem = f + v + l + 'ْ';
         suffix = suffixes[index].substring(1);
       } else if (bina === "mudha'af" && index >= 5) {
         const base = past.replace("ّ", "");
         stem = base.charAt(0) + "َ" + base.charAt(1) + "َ" + base.charAt(1) + "ْ";
         suffix = suffixes[index].substring(1);
       } else if (bina === "naqis") {
-        const weakLetter = past.endsWith("ا") ? "و" : "ي";
-        
         if (index === 0) { // Huwa
-          stem = past;
-          suffix = '';
+          stem = past; suffix = '';
         } else if (index === 1) { // Huma (L)
-          stem = past.slice(0, -1) + weakLetter + "َ";
-          suffix = "ا";
+          stem = past.slice(0, -1) + weakLetter + "َ"; suffix = "ا";
         } else if (index === 2) { // Hum
-          stem = past.slice(0, -1);
-          suffix = "َوْا";
+          stem = past.slice(0, -1); suffix = "َوْا";
         } else if (index >= 5) { // Anta, Ana, etc.
           stem = past.slice(0, -1) + weakLetter + "ْ";
           suffix = suffixes[index].substring(1);
         } else {
-          stem = past.slice(0, -1);
-          suffix = suffixes[index];
+          stem = past.slice(0, -1); suffix = suffixes[index];
         }
       } else if (index >= 5) {
-        stem = past.slice(0, -1) + "ْ";
+        // Shahih / Mithal - last root letter gets sukun
+        const cleanedPast = past.replace(/[َُِّْ]$/, "");
+        stem = cleanedPast + "ْ";
         suffix = suffixes[index].substring(1);
       } else {
-        stem = past.slice(0, -1);
+        stem = past;
+        suffix = '';
+        // For index 0, 3, 4 we handle normally
+        if (index === 3) { stem = past.slice(0, -1); suffix = "َتْ"; }
+        if (index === 4) { stem = past.slice(0, -1); suffix = "َتَا"; }
       }
       
       result = stem + suffix;
