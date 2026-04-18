@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { Brain, CheckCircle2, Loader2, Send } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { GoogleGenAI } from "@google/genai";
 import { cn } from '@/lib/utils';
 import { db } from '@/lib/db';
 
@@ -19,37 +18,48 @@ export const AIView = () => {
     setAnalysis(null);
     
     try {
-      const client = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY! });
-      
-      const prompt = `Analisis kata kerja atau akar kata Arab berikut: "${input}". 
-      Sediakan informasi berikut dalam format JSON:
-      {
-        "root": "akar kata",
-        "past": "bentuk fiil madhi (past)",
-        "present": "bentuk fiil mudhari (present)",
-        "wazan": "pola wazan",
-        "type": "tipe kata (Shahih, Mithal, dll)",
-        "meaning": "arti dalam bahasa Indonesia",
-        "explanation": "penjelasan singkat tentang penggunaan atau karakteristik unik kata ini"
-      }`;
-
-      const response = await client.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-          responseMimeType: "application/json"
-        }
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "Anda adalah ahli linguistik bahasa Arab. Berikan analisis kata kerja atau akar kata Arab dalam format JSON murni. Pastikan output hanya JSON."
+            },
+            {
+              role: "user",
+              content: `Analisis kata kerja atau akar kata Arab berikut: "${input}". 
+              Sediakan informasi berikut dalam format JSON:
+              {
+                "root": "akar kata",
+                "past": "bentuk fiil madhi (past)",
+                "present": "bentuk fiil mudhari (present)",
+                "wazan": "pola wazan",
+                "type": "tipe kata (Shahih, Mithal, dll)",
+                "meaning": "arti dalam bahasa Indonesia",
+                "explanation": "penjelasan singkat tentang penggunaan atau karakteristik unik kata ini"
+              }`
+            }
+          ],
+          response_format: { type: "json_object" }
+        })
       });
 
-      const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) {
-        setAnalysis(JSON.parse(text));
+      const data = await response.json();
+      
+      if (data.choices && data.choices[0].message.content) {
+        setAnalysis(JSON.parse(data.choices[0].message.content));
       } else {
-        throw new Error("Respons kosong dari AI");
+        throw new Error(data.error?.message || "Respons kosong dari AI");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setAnalysis({ error: "Gagal menghubungkan ke Mesin Kecerdasan. Periksa koneksi atau kunci API Anda." });
+      setAnalysis({ error: `Gagal menghubungkan ke Mesin Kecerdasan: ${error.message}` });
     } finally {
       setIsAnalysing(false);
     }
