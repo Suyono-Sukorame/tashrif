@@ -108,16 +108,32 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
       ];
       
       let stem = past.slice(0, -1);
-      const suffix = suffixes[index];
+      let suffix = suffixes[index];
 
       // I'LAL RULES FOR PAST
       if (bina === "ajwaf" && index >= 5) {
-        // e.g. Qala -> Qul-na
-        stem = past.charAt(0) + "ُ"; // Simplified dammah for Ajwaf Wawi
+        stem = past.charAt(0) + "ُ"; 
       } else if (bina === "mudha'af" && index >= 5) {
-        // e.g. Madda -> Madad-na (fakkul idgham)
         const base = past.replace("ّ", "");
         stem = base.charAt(0) + "َ" + base.charAt(1) + "َ" + base.charAt(1);
+      } else if (bina === "naqis") {
+        // Determine the hidden root (Waw or Ya)
+        // Usually, if ends with 'ا' it's Wawi, if 'ى' it's Ya'i
+        const weakLetter = past.endsWith("ا") ? "و" : "ي";
+        
+        if (index === 1) { // Huma (L)
+          stem = past.slice(0, -1) + weakLetter + "َ";
+          suffix = "ا";
+        } else if (index === 2) { // Hum
+          stem = past.slice(0, -1);
+          suffix = "َوْا";
+        } else if (index >= 5) { // Anta, Ana, etc.
+          stem = past.slice(0, -1) + weakLetter + "َ";
+          suffix = suffixes[index].replace("ْت", "ْط"); // Temporary placeholder to avoid confusion
+          // Actually simpler:
+          stem = past.slice(0, -1) + weakLetter + "ْ";
+          suffix = suffixes[index].substring(1);
+        }
       } else if (index >= 5) {
         stem = stem + "ْ";
       }
