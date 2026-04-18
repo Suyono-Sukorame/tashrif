@@ -150,7 +150,7 @@ export const LearnView = ({ verb, onBack, onStartQuiz }: LearnViewProps) => {
             {verb.examples.map((ex, idx) => (
               <Card key={idx} className="p-4 bg-white dark:bg-dark-card border-border dark:border-dark-border">
                 <p className="text-right text-lg font-bold arabic-serif text-text-dark dark:text-dark-text" dir="rtl">{ex.ar}</p>
-                <p className="text-left text-[11px] text-text-muted dark:text-slate-400 mt-2 font-medium italic">&quot;{ex.id}&quot;</p>
+                <p className="text-left text-[11px] text-text-muted dark:text-slate-400 mt-2 font-medium italic" dir="ltr">&quot;{ex.id}&quot;</p>
               </Card>
             ))}
           </div>
