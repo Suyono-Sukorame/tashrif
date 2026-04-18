@@ -10,6 +10,9 @@ export const syncWithCloud = async () => {
     const { data: cloudVerbs } = await supabase.from('verbs').select('*');
     if (cloudVerbs) {
       console.log(`Menyinkronkan ${cloudVerbs.length} leksikon dari cloud...`);
+      const cloudIds = new Set(cloudVerbs.map(v => v.id));
+      
+      // A. Update/Add from Cloud
       for (const v of cloudVerbs) {
         await db.verbs.put({
           id: v.id,
@@ -24,6 +27,15 @@ export const syncWithCloud = async () => {
           isFavorite: v.is_favorite || false,
           createdAt: v.created_at ? new Date(v.created_at).getTime() : Date.now()
         });
+      }
+
+      // B. Cleanup: Hapus data lokal yang sudah tidak ada di Cloud
+      const allLocalVerbs = await db.verbs.toArray();
+      for (const localV of allLocalVerbs) {
+        if (!cloudIds.has(localV.id)) {
+          console.log(`Menghapus data lokal lama: ${localV.id}`);
+          await db.verbs.delete(localV.id!);
+        }
       }
     }
 

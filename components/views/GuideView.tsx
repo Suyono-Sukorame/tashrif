@@ -27,8 +27,8 @@ export const GuideView = ({ onBack }: GuideViewProps) => {
       <div className="grid grid-cols-1 gap-3 pb-20">
         {terms.map((t, i) => (
           <Card key={i} className="p-4 bg-white dark:bg-dark-card border-border dark:border-dark-border">
-            <h4 className="font-bold text-primary dark:text-emerald-400 mb-1">{t.title}</h4>
-            <p className="text-xs text-text-muted dark:text-slate-400 leading-relaxed">{t.desc}</p>
+            <h4 className="font-bold text-primary dark:text-emerald-400 mb-1 text-left">{t.title}</h4>
+            <p className="text-xs text-text-muted dark:text-slate-400 leading-relaxed text-left">{t.desc}</p>
           </Card>
         ))}
       </div>
