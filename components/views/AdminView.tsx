@@ -84,6 +84,7 @@ export const AdminView = () => {
         translationId: item.meaning || item.translationId,
         type: item.type || 'shahih',
         forms: item.forms || null,
+        examples: item.examples || null,
         isFavorite: false,
         createdAt: Date.now()
       }));
@@ -98,6 +99,7 @@ export const AdminView = () => {
           translation: d.translationId,
           type: d.type,
           forms: d.forms,
+          examples: d.examples,
           is_favorite: d.isFavorite,
           created_at: new Date().toISOString()
         }))
@@ -202,8 +204,11 @@ export const AdminView = () => {
             <p className="text-[9px] font-bold text-text-muted uppercase mb-2">Format JSON (Array of Objects):</p>
             <pre className="text-[8px] text-primary dark:text-emerald-400 overflow-x-auto">
               {`[
-  { "root": "k-t-b", "past": "كتب", "present": "يكتب", "meaning": "Menulis" },
-  { "root": "q-r-a", "past": "قرأ", "present": "يقرأ", "meaning": "Membaca" }
+  { 
+    "root": "k-t-b", "past": "كتب", "present": "يكتب", "meaning": "Menulis",
+    "forms": [ { "dhamir": "هُوَ", "past": "كتب", "present": "يكتب", ... } ],
+    "examples": [ { "ar": "...", "id": "..." } ]
+  }
 ]`}
             </pre>
           </div>

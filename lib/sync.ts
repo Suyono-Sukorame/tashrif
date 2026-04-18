@@ -20,6 +20,7 @@ export const syncWithCloud = async () => {
           translationId: v.translation || v.translation_id,
           type: v.type || 'shahih',
           forms: v.forms,
+          examples: v.examples,
           isFavorite: v.is_favorite || false,
           createdAt: v.created_at ? new Date(v.created_at).getTime() : Date.now()
         });
