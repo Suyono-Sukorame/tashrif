@@ -20,6 +20,7 @@ export interface Verb {
   isMazid?: boolean;
   translationId: string;
   examples?: Example[];
+  forms?: any[]; // To store custom conjugations
   isFavorite: boolean;
   createdAt: number;
 }

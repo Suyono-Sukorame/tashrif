@@ -23,39 +23,47 @@ export const AdminView = () => {
   const handleAddVerb = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
+    // Explicit data object
+    const payload = {
+      root: root.trim(),
+      past: past.trim(),
+      present: present.trim(),
+      wazan: wazan,
+      translation: translation.trim(),
+      type: 'shahih',
+      is_favorite: false,
+      created_at: new Date().toISOString()
+    };
+
+    console.log("Mengirim data ke Supabase:", payload);
+
     try {
-      const newVerb = {
-        root,
-        past,
-        present,
-        wazan,
-        translationId: translation,
-        type: 'shahih' as any,
-        isFavorite: false,
-        createdAt: Date.now()
-      };
-
       // 1. Save to Supabase
-      const { data, error } = await supabase.from('verbs').insert([{
-        root,
-        past,
-        present,
-        wazan,
-        translation: translation, // mapping to SQL column 'translation'
-        type: 'shahih',
-        is_favorite: false,
-        created_at: new Date()
-      }]).select();
+      const { data, error } = await supabase
+        .from('verbs')
+        .insert([payload])
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase Error Detail:", error);
+        throw error;
+      }
 
       // 2. Sync to Local Dexie
-      await db.verbs.add(newVerb);
+      await db.verbs.add({
+        ...payload,
+        translationId: translation,
+        createdAt: Date.now(),
+        isFavorite: false,
+        type: 'shahih' as any
+      });
 
-      toast.success('Kata kerja berhasil ditambahkan ke Cloud!');
+      toast.success('Leksikon baru berhasil dipublikasikan!');
       setRoot(''); setPast(''); setPresent(''); setTranslation('');
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("Catch Error:", error);
+      toast.error(error.message || "Terjadi kesalahan saat menyimpan");
     } finally {
       setLoading(false);
     }
@@ -74,7 +82,8 @@ export const AdminView = () => {
         present: item.present,
         wazan: item.wazan || 'Fa\'ala - Yaf\'ulu',
         translationId: item.meaning || item.translationId,
-        type: 'shahih' as any,
+        type: item.type || 'shahih',
+        forms: item.forms || null,
         isFavorite: false,
         createdAt: Date.now()
       }));
@@ -88,11 +97,15 @@ export const AdminView = () => {
           wazan: d.wazan,
           translation: d.translationId,
           type: d.type,
+          forms: d.forms,
           is_favorite: d.isFavorite,
-          created_at: new Date()
+          created_at: new Date().toISOString()
         }))
       );
-      if (error) throw error;
+      if (error) {
+        console.error("Bulk Error:", error);
+        throw error;
+      }
 
       // 2. Sync to Local Dexie
       for (const item of formattedData) {
