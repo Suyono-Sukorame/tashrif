@@ -23,18 +23,14 @@ export const Header = ({ activeTab, setActiveTab, searchQuery, setSearchQuery }:
   return (
     <header className="px-6 py-4 bg-white dark:bg-dark-card sticky top-0 z-40 border-b border-border dark:border-dark-border transition-colors duration-300">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-lg">ت</div>
-          <h1 className="text-lg font-bold dark:text-dark-text">Tashrif<span className="text-primary dark:text-emerald-400">Master</span></h1>
-        </div>
-        
+        {/* Menu di Kiri */}
         {activeTab === 'quiz' ? (
-          <div className="text-xs font-bold text-primary dark:text-emerald-400 bg-primary-light dark:bg-emerald-950 px-2 py-1 rounded">Mode Kuis</div>
+          <div className="w-10" /> // Spacer
         ) : (
           <div className="relative">
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 -ml-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
             >
               {isMenuOpen ? <X className="w-5 h-5 text-primary" /> : <Menu className="w-5 h-5 text-text-muted dark:text-slate-400" />}
             </button>
@@ -48,10 +44,10 @@ export const Header = ({ activeTab, setActiveTab, searchQuery, setSearchQuery }:
                     className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
                   />
                   <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-card border border-border dark:border-dark-border rounded-2xl shadow-2xl z-50 overflow-hidden"
+                    initial={{ opacity: 0, y: 10, x: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, x: -10, scale: 0.95 }}
+                    className="absolute left-0 mt-2 w-[50vw] min-w-[200px] bg-white dark:bg-dark-card border border-border dark:border-dark-border rounded-2xl shadow-2xl z-50 overflow-hidden"
                   >
                     <div className="p-2 space-y-1">
                       <div className="px-3 py-2 text-[10px] font-bold text-text-muted uppercase tracking-widest">Menu Navigasi</div>
@@ -76,7 +72,7 @@ export const Header = ({ activeTab, setActiveTab, searchQuery, setSearchQuery }:
                         </button>
                       ))}
                       <div className="border-t border-border dark:border-dark-border my-1" />
-                      <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-xs font-medium text-text-muted hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors">
+                      <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-text-muted hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors">
                         <Info className="w-4 h-4" />
                         Tentang Aplikasi
                       </button>
@@ -86,6 +82,16 @@ export const Header = ({ activeTab, setActiveTab, searchQuery, setSearchQuery }:
               )}
             </AnimatePresence>
           </div>
+        )}
+
+        {/* Logo di Kanan/Tengah */}
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-bold dark:text-dark-text tracking-tight">Tashrif<span className="text-primary dark:text-emerald-400">Master</span></h1>
+          <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-lg shadow-lg shadow-primary/20">ت</div>
+        </div>
+
+        {activeTab === 'quiz' && (
+          <div className="text-xs font-bold text-primary dark:text-emerald-400 bg-primary-light dark:bg-emerald-950 px-2 py-1 rounded">Mode Kuis</div>
         )}
       </div>
       
