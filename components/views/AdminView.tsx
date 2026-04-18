@@ -37,8 +37,14 @@ export const AdminView = () => {
 
       // 1. Save to Supabase
       const { data, error } = await supabase.from('verbs').insert([{
-        ...newVerb,
-        translation_id: translation // align with SQL schema
+        root,
+        past,
+        present,
+        wazan,
+        translation: translation, // mapping to SQL column 'translation'
+        type: 'shahih',
+        is_favorite: false,
+        created_at: new Date()
       }]).select();
 
       if (error) throw error;
@@ -75,7 +81,16 @@ export const AdminView = () => {
 
       // 1. Save to Supabase
       const { error } = await supabase.from('verbs').insert(
-        formattedData.map(d => ({ ...d, translation_id: d.translationId }))
+        formattedData.map(d => ({ 
+          root: d.root,
+          past: d.past,
+          present: d.present,
+          wazan: d.wazan,
+          translation: d.translationId,
+          type: d.type,
+          is_favorite: d.isFavorite,
+          created_at: new Date()
+        }))
       );
       if (error) throw error;
 
