@@ -5,7 +5,7 @@
 
 export type Tense = 'past' | 'present' | 'present_manshub' | 'present_majzum' | 'imperative' | 'future' | 'ishtilahy';
 
-export type BinaType = "shahih" | "ajwaf" | "naqish" | "mudha'af" | "mithal";
+export type BinaType = "shahih" | "ajwaf" | "naqis" | "mudha'af" | "mithal";
 
 export interface IshtilahyResult {
   title: string;
@@ -50,7 +50,7 @@ function detectBina(past: string, root?: string): BinaType {
   // Simple heuristic for detection
   if (past.includes("ّ")) return "mudha'af";
   if (past.charAt(1) === "ا") return "ajwaf";
-  if (past.endsWith("ى") || past.endsWith("ا")) return "naqish";
+  if (past.endsWith("ى") || past.endsWith("ا")) return "naqis";
   if (past.startsWith("و") || past.startsWith("ي")) return "mithal";
   return "shahih";
 }
@@ -145,17 +145,27 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
         stemText = stemText.substring(1);
       }
       
-      const suffixText = suffixes[index];
+      let currentSuffix = suffixes[index];
       
-      // I'LAL RULES FOR PRESENT MAJZUM (Removal of weak letter)
-      if (tense === "present_majzum" && bina === "naqish" && [0, 3, 6, 12, 13].includes(index)) {
-         stemText = stemText.slice(0, -1); // Remove final weak letter
+      // I'LAL RULES FOR NAQIS (Weak Ending)
+      if (bina === "naqis") {
+        if (tense === "present_majzum" && [0, 3, 6, 12, 13].includes(index)) {
+          // Remove final weak letter but keep harakat
+          stemText = stemText.replace(/[وىاى]$/, ""); 
+          currentSuffix = ''; // Suffix is removed
+        } else if (tense === "present_manshub" && [0, 3, 6, 12, 13].includes(index)) {
+          if (stemText.endsWith("و") || stemText.endsWith("ي")) {
+             currentSuffix = 'َ'; // Fathah visible
+          } else {
+             currentSuffix = ''; // Muqaddarah for Alif Maqshurah
+          }
+        }
       }
 
-      result = prefixText + stemText + suffixText;
+      result = prefixText + stemText + currentSuffix;
       parts.push({ text: prefixText, type: 'prefix' });
       parts.push({ text: stemText, type: 'root' });
-      parts.push({ text: suffixText, type: 'suffix' });
+      if (currentSuffix) parts.push({ text: currentSuffix, type: 'suffix' });
 
     } else if (tense === 'future') {
        const presentForms = conjugate(past, present, 'present');

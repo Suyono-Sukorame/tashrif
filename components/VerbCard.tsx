@@ -65,9 +65,18 @@ export const VerbCard = ({ verb, onClick, onToggleFavorite }: VerbCardProps) => 
           
           <div className="flex-1 overflow-hidden text-right">
             <div className="flex items-center justify-end gap-2 mb-1.5">
-              <TextLTR className="flex-shrink-0">
+              <TextLTR className="flex-shrink-0 flex gap-1">
                 {verb.isMazid && (
                   <span className="text-[8px] font-bold bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-tighter">Mazid</span>
+                )}
+                {verb.type === 'mithal' && (
+                  <span className="text-[8px] font-bold bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase tracking-tighter">Mithal</span>
+                )}
+                {verb.type === 'ajwaf' && (
+                  <span className="text-[8px] font-bold bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded uppercase tracking-tighter">Ajwaf</span>
+                )}
+                {verb.type === 'naqis' && (
+                  <span className="text-[8px] font-bold bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded uppercase tracking-tighter">Naqis</span>
                 )}
               </TextLTR>
               <TextRTL className="text-lg font-bold text-text-dark dark:text-dark-text leading-tight truncate">

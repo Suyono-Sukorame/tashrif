@@ -21,6 +21,7 @@ export const GuideView = ({ onBack }: GuideViewProps) => {
       { title: 'Kaidah Majzum (Jusif)', desc: 'Penghapusan huruf illat (Alif/Waw/Ya) saat fi\'il dalam kondisi Majzum untuk menghindari bertemunya dua sukun.' },
       { title: 'I’rab Ajwaf', desc: 'Perubahan harakat akhir atau penghapusan huruf illat sebagai tanda status gramatikal (Rafa\', Nashab, Jazm).' },
       { title: 'Verba Khusus Ajwaf', desc: 'Kelompok verba seperti Nāma (Tidur), Khāfa (Takut), dan Shā’a (Berkehendak) yang memiliki pola I’lal unik.' },
+      { title: 'Fi’il Naqis (Akhiran Lemah)', desc: 'Fi’il yang huruf terakhirnya adalah huruf illat (Waw/Ya). Kaidah penting: Huruf illat tidak berharakat (Marfu’), berfathah (Mansub), dan DIHAPUS TOTAL saat kondisi Majzum (contoh: Yad’u jadi Lam Yad’u).' },
     ]}
   ];
 
