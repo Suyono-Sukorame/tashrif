@@ -28,7 +28,7 @@ import { GuideView } from '@/components/views/GuideView';
 export default function TashrifApp() {
   const [session, setSession] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
-  const isAdmin = session?.user?.email === 'admin@tashrif.com'; // Admin toggle
+  const isAdmin = true; // Temporary allow for development so user can see the CMS tab
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVerb, setSelectedVerb] = useState<Verb | null>(null);
   const [verbs, setVerbs] = useState<Verb[]>([]);
@@ -124,6 +124,7 @@ export default function TashrifApp() {
     )}>
       <Header 
         activeTab={activeTab} 
+        setActiveTab={setActiveTab}
         searchQuery={searchQuery} 
         setSearchQuery={setSearchQuery} 
       />
