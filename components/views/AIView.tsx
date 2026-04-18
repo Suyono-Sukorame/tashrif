@@ -18,23 +18,16 @@ export const AIView = () => {
     setAnalysis(null);
     
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content: "Anda adalah ahli linguistik bahasa Arab. Berikan analisis kata kerja atau akar kata Arab dalam format JSON murni. Pastikan output hanya JSON."
-            },
-            {
-              role: "user",
-              content: `Analisis kata kerja atau akar kata Arab berikut: "${input}". 
-              Sediakan informasi berikut dalam format JSON:
+          contents: [{
+            parts: [{
+              text: `Analisis kata kerja atau akar kata Arab berikut: "${input}". 
+              Sediakan informasi berikut dalam format JSON murni:
               {
                 "root": "akar kata",
                 "past": "bentuk fiil madhi (past)",
@@ -44,22 +37,24 @@ export const AIView = () => {
                 "meaning": "arti dalam bahasa Indonesia",
                 "explanation": "penjelasan singkat tentang penggunaan atau karakteristik unik kata ini"
               }`
-            }
-          ],
-          response_format: { type: "json_object" }
+            }]
+          }],
+          generationConfig: {
+            response_mime_type: "application/json",
+          }
         })
       });
 
       const data = await response.json();
       
-      if (data.choices && data.choices[0].message.content) {
-        setAnalysis(JSON.parse(data.choices[0].message.content));
+      if (data.candidates && data.candidates[0].content.parts[0].text) {
+        setAnalysis(JSON.parse(data.candidates[0].content.parts[0].text));
       } else {
         throw new Error(data.error?.message || "Respons kosong dari AI");
       }
     } catch (error: any) {
       console.error(error);
-      setAnalysis({ error: `Gagal menghubungkan ke Mesin Kecerdasan: ${error.message}` });
+      setAnalysis({ error: `Gagal (Gemini Free): ${error.message}` });
     } finally {
       setIsAnalysing(false);
     }

@@ -17,6 +17,7 @@ export const AdminView = () => {
   const [present, setPresent] = useState('');
   const [wazan, setWazan] = useState('Fa\'ala - Yaf\'ulu');
   const [translation, setTranslation] = useState('');
+  const [bulkInput, setBulkInput] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleAddVerb = async (e: React.FormEvent) => {
@@ -49,6 +50,44 @@ export const AdminView = () => {
       setRoot(''); setPast(''); setPresent(''); setTranslation('');
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkAdd = async () => {
+    if (!bulkInput) return;
+    setLoading(true);
+    try {
+      const dataArray = JSON.parse(bulkInput);
+      if (!Array.isArray(dataArray)) throw new Error("Format harus berupa Array JSON");
+
+      const formattedData = dataArray.map(item => ({
+        root: item.root,
+        past: item.past,
+        present: item.present,
+        wazan: item.wazan || 'Fa\'ala - Yaf\'ulu',
+        translationId: item.meaning || item.translationId,
+        type: 'shahih' as any,
+        isFavorite: false,
+        createdAt: Date.now()
+      }));
+
+      // 1. Save to Supabase
+      const { error } = await supabase.from('verbs').insert(
+        formattedData.map(d => ({ ...d, translation_id: d.translationId }))
+      );
+      if (error) throw error;
+
+      // 2. Sync to Local Dexie
+      for (const item of formattedData) {
+        await db.verbs.add(item);
+      }
+
+      toast.success(`${formattedData.length} kata kerja berhasil diimpor!`);
+      setBulkInput('');
+    } catch (error: any) {
+      toast.error("Gagal impor: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -122,6 +161,41 @@ export const AdminView = () => {
             </Button>
           </div>
         </form>
+      </Card>
+
+      <Card className="p-6 border-border dark:border-dark-border bg-white dark:bg-dark-card shadow-xl">
+        <TextLTR className="flex items-center gap-2 mb-4">
+           <Sparkles className="w-5 h-5 text-accent" />
+           <h3 className="font-bold text-sm uppercase tracking-tight dark:text-dark-text">Bulk Leksikon Import</h3>
+        </TextLTR>
+        
+        <div className="space-y-4">
+          <div className="bg-stone-50 dark:bg-slate-900 p-3 rounded-xl border border-dashed border-border dark:border-slate-800">
+            <p className="text-[9px] font-bold text-text-muted uppercase mb-2">Format JSON (Array of Objects):</p>
+            <pre className="text-[8px] text-primary dark:text-emerald-400 overflow-x-auto">
+              {`[
+  { "root": "k-t-b", "past": "كتب", "present": "يكتب", "meaning": "Menulis" },
+  { "root": "q-r-a", "past": "قرأ", "present": "يقرأ", "meaning": "Membaca" }
+]`}
+            </pre>
+          </div>
+          
+          <textarea 
+            value={bulkInput}
+            onChange={(e) => setBulkInput(e.target.value)}
+            placeholder="Paste JSON array di sini..."
+            className="w-full h-32 p-4 bg-stone-50 dark:bg-slate-900 border border-border dark:border-slate-800 rounded-xl text-xs font-mono focus:ring-2 focus:ring-accent/20 outline-none transition-all dark:text-dark-text resize-none"
+          />
+          
+          <Button 
+            onClick={handleBulkAdd}
+            disabled={loading || !bulkInput}
+            variant="secondary" 
+            className="w-full py-3 rounded-xl border border-accent/20 text-accent font-bold"
+          >
+            {loading ? "Mengimpor..." : "IMPOR DATA MASAL"}
+          </Button>
+        </div>
       </Card>
 
       <div className="grid grid-cols-1 gap-3">

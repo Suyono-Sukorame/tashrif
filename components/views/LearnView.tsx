@@ -26,6 +26,8 @@ export const LearnView = ({ verb, onBack, onStartQuiz }: LearnViewProps) => {
   const tenses: { id: Tense, label: string }[] = [
     { id: 'past', label: 'Madhi' },
     { id: 'present', label: 'Mudhari' },
+    { id: 'present_manshub', label: 'Manshub' },
+    { id: 'present_majzum', label: 'Majzum' },
     { id: 'ishtilahy', label: 'Ringkasan' },
     { id: 'imperative', label: 'Amr' },
   ];
@@ -116,6 +118,8 @@ export const LearnView = ({ verb, onBack, onStartQuiz }: LearnViewProps) => {
                 </TextLTR>
                 <div className="col-span-8 flex justify-end items-center px-4 py-2.5 gap-4">
                    <TextRTL className="text-xl font-bold text-primary dark:text-emerald-400">
+                      {activeTense === 'present_manshub' && <span className="text-text-muted mr-1 opacity-50">لَنْ</span>}
+                      {activeTense === 'present_majzum' && <span className="text-text-muted mr-1 opacity-50">لَمْ</span>}
                       {c.parts.map((p, pIdx) => (
                         <span key={pIdx} className={cn(
                           p.type === 'prefix' ? "text-accent dark:text-orange-400" : 

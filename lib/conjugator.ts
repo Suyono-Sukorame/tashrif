@@ -1,30 +1,16 @@
 /**
- * Advanced Arabic Verb Conjugation Engine
- * This is a simplified but robust version for the enterprise app.
- * In a real-world scenario, this would handle complex morphophonological rules.
+ * Advanced Arabic Verb Conjugation Engine v2.0
+ * Handles Shahih, Ajwaf, Naqish, and Mudha'af with I'lal rules.
  */
 
 export type Tense = 'past' | 'present' | 'present_manshub' | 'present_majzum' | 'imperative' | 'future' | 'ishtilahy';
+
+export type BinaType = "shahih" | "ajwaf" | "naqish" | "mudha'af" | "mithal";
 
 export interface IshtilahyResult {
   title: string;
   value: string;
   type: string;
-}
-
-/**
- * Generates horizontal summary (Tashrif Ishtilahy)
- */
-export function getIshtilahy(verb: any): IshtilahyResult[] {
-  return [
-    { title: 'Madhi', value: verb.past, type: 'past' },
-    { title: 'Mudhari', value: verb.present, type: 'present' },
-    { title: 'Masdar', value: verb.masdar || '-', type: 'masdar' },
-    { title: 'Fail', value: verb.activeParticiple || '-', type: 'activeParticiple' },
-    { title: 'Maf\'ul', value: verb.passiveParticiple || '-', type: 'passiveParticiple' },
-    { title: 'Amr', value: verb.past ? conjugate(verb.past, verb.present, 'imperative')[6].value : '-', type: 'imperative' },
-    { title: 'Makan/Zaman', value: verb.nounPlaceTime || '-', type: 'nounPlaceTime' },
-  ];
 }
 
 export interface ConjugationPart {
@@ -58,15 +44,39 @@ export const DHAMIRS = [
 ];
 
 /**
- * Simplified rule-based engine for common patterns
- * Handles Shahih, and some Mithal (like waqa'a)
+ * Detects the Bina' type of a verb
+ */
+function detectBina(past: string, root?: string): BinaType {
+  // Simple heuristic for detection
+  if (past.includes("ّ")) return "mudha'af";
+  if (past.charAt(1) === "ا") return "ajwaf";
+  if (past.endsWith("ى") || past.endsWith("ا")) return "naqish";
+  if (past.startsWith("و") || past.startsWith("ي")) return "mithal";
+  return "shahih";
+}
+
+/**
+ * Generates horizontal summary (Tashrif Ishtilahy)
+ */
+export function getIshtilahy(verb: any): IshtilahyResult[] {
+  return [
+    { title: 'Madhi', value: verb.past, type: 'past' },
+    { title: 'Mudhari', value: verb.present, type: 'present' },
+    { title: 'Masdar', value: verb.masdar || '-', type: 'masdar' },
+    { title: 'Fail', value: verb.activeParticiple || '-', type: 'activeParticiple' },
+    { title: 'Maf\'ul', value: verb.passiveParticiple || '-', type: 'passiveParticiple' },
+    { title: 'Amr', value: verb.past ? conjugate(verb.past, verb.present, 'imperative')[6].value : '-', type: 'imperative' },
+    { title: 'Makan/Zaman', value: verb.nounPlaceTime || '-', type: 'nounPlaceTime' },
+  ];
+}
+
+/**
+ * Core conjugation engine
  */
 export function conjugate(past: string, present: string, tense: Tense): ConjugationResult[] {
   const results: ConjugationResult[] = [];
+  const bina = detectBina(past);
 
-  const basePast = past; // e.g. وَقَعَ
-  const basePresent = present; // e.g. يَقَعُ
-  
   DHAMIRS.forEach((d, index) => {
     let result = '';
     const parts: ConjugationPart[] = [];
@@ -78,31 +88,52 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
         'ْتُ', 'ْنَا'
       ];
       
-      const stemText = index >= 5 ? basePast.slice(0, -1) + 'ْ' : basePast.slice(0, -1);
-      const suffixText = suffixes[index];
-      result = stemText + suffixText;
+      let stem = past.slice(0, -1);
+      const suffix = suffixes[index];
 
-      parts.push({ text: stemText, type: 'root' });
-      if (suffixText) parts.push({ text: suffixText, type: 'suffix' });
+      // I'LAL RULES FOR PAST
+      if (bina === "ajwaf" && index >= 5) {
+        // e.g. Qala -> Qul-na
+        stem = past.charAt(0) + "ُ"; // Simplified dammah for Ajwaf Wawi
+      } else if (bina === "mudha'af" && index >= 5) {
+        // e.g. Madda -> Madad-na (fakkul idgham)
+        const base = past.replace("ّ", "");
+        stem = base.charAt(0) + "َ" + base.charAt(1) + "َ" + base.charAt(1);
+      } else if (index >= 5) {
+        stem = stem + "ْ";
+      }
+      
+      result = stem + suffix;
+      parts.push({ text: stem, type: 'root' });
+      if (suffix) parts.push({ text: suffix, type: 'suffix' });
 
-    } else if (tense === 'present') {
+    } else if (tense === 'present' || tense === 'present_manshub' || tense === 'present_majzum') {
       const prefixes = ['يَ', 'يَ', 'يَ', 'تَ', 'تَ', 'يَ', 'تَ', 'تَ', 'تَ', 'تَ', 'تَ', 'تَ', 'أَ', 'نَ'];
-      const suffixes = ['ُ', 'انِ', 'ونَ', 'ُ', 'انِ', 'نَ', 'ُ', 'انِ', 'ونَ', 'ينَ', 'انِ', 'نَ', 'ُ', 'ُ'];
+      let suffixes = ['ُ', 'انِ', 'ونَ', 'ُ', 'انِ', 'نَ', 'ُ', 'انِ', 'ونَ', 'ينَ', 'انِ', 'نَ', 'ُ', 'ُ'];
       
+      // MANSHUB & MAJZUM MODIFIERS
+      if (tense === 'present_manshub') {
+        suffixes = ['َ', 'ا', 'وا', 'َ', 'ا', 'نَ', 'َ', 'ا', 'وا', 'ي', 'ا', 'نَ', 'َ', 'َ'];
+      } else if (tense === 'present_majzum') {
+        suffixes = ['ْ', 'ا', 'وا', 'ْ', 'ا', 'نَ', 'ْ', 'ا', 'وا', 'ي', 'ا', 'نَ', 'ْ', 'ْ'];
+      }
+
       const prefixText = prefixes[index];
-      // More robust stem extraction: remove the first character (prefix) and the last character (default vowel)
-      // and also handle the first vowel if it exists (like ya-K-tubu)
-      let stemText = basePresent.substring(1, basePresent.length - 1);
+      let stemText = present.substring(1, present.length - 1);
       
-      // If stem starts with a vowel (fathah/dammah/kasrah), we might need to be careful
-      // For now, let's just make sure we don't double the prefix vowel
+      // Clean prefix vowel if SDK added it
       if (stemText.startsWith('َ') || stemText.startsWith('ُ') || stemText.startsWith('ِ')) {
         stemText = stemText.substring(1);
       }
       
       const suffixText = suffixes[index];
-      result = prefixText + stemText + suffixText;
+      
+      // I'LAL RULES FOR PRESENT MAJZUM (Removal of weak letter)
+      if (tense === "present_majzum" && bina === "naqish" && [0, 3, 6, 12, 13].includes(index)) {
+         stemText = stemText.slice(0, -1); // Remove final weak letter
+      }
 
+      result = prefixText + stemText + suffixText;
       parts.push({ text: prefixText, type: 'prefix' });
       parts.push({ text: stemText, type: 'root' });
       parts.push({ text: suffixText, type: 'suffix' });
@@ -116,16 +147,17 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
 
     } else if (tense === 'imperative') {
        if (index >= 6 && index <= 11) {
-          const stemText = basePresent.substring(2, basePresent.length - 1); 
-          const impSuffixes = ['', 'ا', 'وا', 'ي', 'ا', 'ن'];
-          const suffixText = 'ْ' + impSuffixes[index - 6];
-          const raw = stemText + suffixText;
-          result = raw.replace('ْا', 'ا').replace('ْوا', 'وا').replace('ْي', 'y').replace('ْن', 'n');
-          result = stemText + 'ْ' + impSuffixes[index - 6];
-          result = result.replace('ْا', 'ا').replace('ْوا', 'وا').replace('ْي', 'ي').replace('ْن', 'ن');
+          const presentMajzum = conjugate(past, present, 'present_majzum');
+          const p = presentMajzum[index];
+          // Remove prefix to get imperative
+          result = p.value.substring(2);
           
-          parts.push({ text: stemText, type: 'root' });
-          parts.push({ text: result.replace(stemText, ''), type: 'suffix' });
+          // Add Alif if needed (if it starts with sukun)
+          if (!result.startsWith('َ') && !result.startsWith('ُ') && !result.startsWith('ِ')) {
+             result = 'ا' + result;
+          }
+
+          parts.push({ text: result, type: 'root' });
        } else {
           result = '-';
           parts.push({ text: '-', type: 'root' });
