@@ -38,19 +38,33 @@ export const Header = ({ activeTab, setActiveTab, searchQuery, setSearchQuery }:
             <AnimatePresence>
               {isMenuOpen && (
                 <>
+                  {/* Backdrop */}
                   <motion.div 
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     onClick={() => setIsMenuOpen(false)}
-                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
                   />
+                  
+                  {/* Side Drawer (Sidebar) */}
                   <motion.div 
-                    initial={{ opacity: 0, y: 10, x: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, x: -10, scale: 0.95 }}
-                    className="absolute left-0 mt-2 w-[50vw] min-w-[200px] bg-white dark:bg-dark-card border border-border dark:border-dark-border rounded-2xl shadow-2xl z-50 overflow-hidden"
+                    initial={{ x: '-100%' }}
+                    animate={{ x: 0 }}
+                    exit={{ x: '-100%' }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                    className="fixed left-0 top-0 h-screen w-[70vw] sm:w-[50vw] bg-white/95 dark:bg-dark-card/95 backdrop-blur-2xl border-r border-border dark:border-dark-border shadow-2xl z-50 overflow-hidden flex flex-col"
                   >
-                    <div className="p-2 space-y-1">
-                      <div className="px-3 py-2 text-[10px] font-bold text-text-muted uppercase tracking-widest">Menu Navigasi</div>
+                    <div className="p-6 border-b border-border dark:border-dark-border flex items-center justify-between">
+                       <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-lg shadow-lg shadow-primary/20">ت</div>
+                          <h1 className="text-lg font-bold dark:text-dark-text tracking-tight">Menu</h1>
+                       </div>
+                       <button onClick={() => setIsMenuOpen(false)} className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors">
+                          <X className="w-5 h-5 text-text-muted" />
+                       </button>
+                    </div>
+
+                    <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+                      <div className="px-3 py-2 text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-60">Navigasi Utama</div>
                       {menuItems.map((item) => (
                         <button
                           key={item.id}
@@ -59,23 +73,30 @@ export const Header = ({ activeTab, setActiveTab, searchQuery, setSearchQuery }:
                             setIsMenuOpen(false);
                           }}
                           className={cn(
-                            "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors",
+                            "w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-sm font-bold transition-all",
                             activeTab === item.id 
-                              ? "bg-primary-light dark:bg-emerald-950/50 text-primary dark:text-emerald-400" 
+                              ? "bg-primary text-white shadow-lg shadow-primary/20" 
                               : "text-text-dark dark:text-slate-300 hover:bg-stone-50 dark:hover:bg-slate-800"
                           )}
                         >
-                          <span className={cn(activeTab === item.id ? "text-primary dark:text-emerald-400" : "text-text-muted")}>
+                          <span className={cn(activeTab === item.id ? "text-white" : "text-primary dark:text-emerald-400")}>
                             {item.icon}
                           </span>
                           {item.label}
                         </button>
                       ))}
-                      <div className="border-t border-border dark:border-dark-border my-1" />
-                      <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-text-muted hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors">
-                        <Info className="w-4 h-4" />
-                        Tentang Aplikasi
-                      </button>
+                      
+                      <div className="pt-6">
+                        <div className="border-t border-border dark:border-dark-border my-4" />
+                        <button className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-text-muted hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors">
+                          <Info className="w-5 h-5 text-accent" />
+                          Tentang Aplikasi
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-stone-50 dark:bg-slate-900/50 border-t border-border dark:border-dark-border">
+                       <p className="text-[9px] text-text-muted dark:text-slate-500 font-bold uppercase text-center tracking-widest">Tashrif Master v4.0.2</p>
                     </div>
                   </motion.div>
                 </>
