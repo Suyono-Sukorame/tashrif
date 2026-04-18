@@ -6,7 +6,27 @@ export const syncWithCloud = async () => {
   if (!user) return;
 
   try {
-    // 1. Pull Favorites from Cloud
+    // 1. Pull Master Verbs from Cloud
+    const { data: cloudVerbs } = await supabase.from('verbs').select('*');
+    if (cloudVerbs) {
+      console.log(`Menyinkronkan ${cloudVerbs.length} leksikon dari cloud...`);
+      for (const v of cloudVerbs) {
+        await db.verbs.put({
+          id: v.id,
+          root: v.root,
+          past: v.past,
+          present: v.present,
+          wazan: v.wazan,
+          translationId: v.translation || v.translation_id,
+          type: v.type || 'shahih',
+          forms: v.forms,
+          isFavorite: v.is_favorite || false,
+          createdAt: v.created_at ? new Date(v.created_at).getTime() : Date.now()
+        });
+      }
+    }
+
+    // 2. Pull Favorites from Cloud
     const { data: cloudFavs } = await supabase
       .from('user_favorites')
       .select('verb_id')
@@ -14,11 +34,12 @@ export const syncWithCloud = async () => {
 
     if (cloudFavs) {
       const favIds = cloudFavs.map(f => f.verb_id);
-      // Update local Dexie verbs (assuming IDs match or we use root)
-      // For simplicity in this demo, we'll use IDs if they exist
+      for (const id of favIds) {
+        await db.verbs.update(id, { isFavorite: true });
+      }
     }
 
-    // 2. Pull Progress from Cloud
+    // 3. Pull Progress from Cloud
     const { data: cloudProgress } = await supabase
       .from('user_progress')
       .select('*')
