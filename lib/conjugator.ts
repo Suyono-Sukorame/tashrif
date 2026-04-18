@@ -47,11 +47,11 @@ export const DHAMIRS = [
  * Detects the Bina' type of a verb
  */
 function detectBina(past: string, root?: string): BinaType {
-  // Simple heuristic for detection
-  if (past.includes("ّ")) return "mudha'af";
-  if (past.charAt(1) === "ا") return "ajwaf";
-  if (past.endsWith("ى") || past.endsWith("ا")) return "naqis";
-  if (past.startsWith("و") || past.startsWith("ي")) return "mithal";
+  const clean = past.replace(/[\u064B-\u065F\u0670]/g, "");
+  if (clean.includes("ّ") || past.includes("ّ")) return "mudha'af";
+  if (clean.charAt(1) === "ا") return "ajwaf";
+  if (clean.endsWith("ى") || clean.endsWith("ا") || clean.endsWith("و") || clean.endsWith("ي")) return "naqis";
+  if (clean.startsWith("و") || clean.startsWith("ي")) return "mithal";
   return "shahih";
 }
 
@@ -59,7 +59,7 @@ function detectBina(past: string, root?: string): BinaType {
  * Extracts 3 root letters from a past tense verb
  */
 function getRoots(past: string): [string, string, string] {
-  const clean = past.replace(/[َُِّْ]/g, "");
+  const clean = past.replace(/[\u064B-\u065F\u0670]/g, "");
   return [clean.charAt(0), clean.charAt(1), clean.charAt(2)];
 }
 
@@ -67,16 +67,21 @@ function getRoots(past: string): [string, string, string] {
  * Generates horizontal summary (Tashrif Ishtilahy)
  */
 export function getIshtilahy(verb: any): IshtilahyResult[] {
+  const cleanPast = (verb.past || "").replace(/[\u064B-\u065F\u0670]/g, "");
   const [f, a, l] = getRoots(verb.past || "");
   const bina = detectBina(verb.past || "");
+  const isMazid = !!verb.isMazid || cleanPast.length > 3;
 
-  const masdar = verb.masdar && verb.masdar !== '-' ? verb.masdar : `${f}${a}ْ${l}ً`;
-  const fail = verb.activeParticiple && verb.activeParticiple !== '-' ? verb.activeParticiple : `${f}َاعِلٌ`;
-  const maful = verb.passiveParticiple && verb.passiveParticiple !== '-' ? verb.passiveParticiple : `مَ${f}ْ${a}ُ${l}ٌ`;
+  // Prioritize DB values, then logic fallbacks
+  const masdar = verb.masdar && verb.masdar !== '-' ? verb.masdar : (isMazid ? '-' : `${f}${a}ْ${l}ً`);
+  const fail = verb.activeParticiple && verb.activeParticiple !== '-' ? verb.activeParticiple : (isMazid ? '-' : `${f}َاعِلٌ`);
+  const maful = verb.passiveParticiple && verb.passiveParticiple !== '-' ? verb.passiveParticiple : (isMazid ? '-' : `مَ${f}ْ${a}ُ${l}ٌ`);
   
-  // Isim Makan/Zaman Pattern: Maf'ilun for Mithal, Maf'alun for others
+  // Isim Makan/Zaman Pattern
   const makan = verb.nounPlaceTime && verb.nounPlaceTime !== '-' ? verb.nounPlaceTime : 
-               (bina === 'mithal' ? `مَ${f}ْ${a}ِ${l}ٌ` : `مَ${f}ْ${a}َ${l}ٌ`);
+               (isMazid ? '-' : (bina === 'mithal' ? `مَ${f}ْ${a}ِ${l}ٌ` : `مَ${f}ْ${a}َ${l}ٌ`));
+
+  const amr = verb.past ? conjugate(verb.past, verb.present, 'imperative')[6].value : '-';
 
   return [
     { title: 'Madhi', value: verb.past, type: 'past' },
@@ -84,7 +89,7 @@ export function getIshtilahy(verb: any): IshtilahyResult[] {
     { title: 'Masdar', value: masdar, type: 'masdar' },
     { title: 'Fail', value: fail, type: 'activeParticiple' },
     { title: 'Maf\'ul', value: maful, type: 'passiveParticiple' },
-    { title: 'Amr', value: verb.past ? conjugate(verb.past, verb.present, 'imperative')[6].value : '-', type: 'imperative' },
+    { title: 'Amr', value: amr, type: 'imperative' },
     { title: 'Makan/Zaman', value: makan, type: 'nounPlaceTime' },
   ];
 }
@@ -99,7 +104,9 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
   DHAMIRS.forEach((d, index) => {
     let result = '';
     const parts: ConjugationPart[] = [];
-    
+    let stem = '';
+    let suffix = '';
+
     if (tense === 'past') {
       const suffixes = [
         'َ', 'َا', 'ُوا', 'َتْ', 'َتَا', 'ْنَ', 
@@ -110,39 +117,34 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
       const [f, a, l] = getRoots(past);
       const weakLetter = past.endsWith("ا") ? "و" : "ي";
       const isAjwafWawi = present.includes('ُ');
-      let stem = '';
-      let suffix = '';
 
       if (bina === "ajwaf" && index >= 5) {
         const v = isAjwafWawi ? 'ُ' : 'ِ';
         stem = f + v + l + 'ْ';
         suffix = suffixes[index].substring(1);
       } else if (bina === "mudha'af" && index >= 5) {
-        const base = past.replace("ّ", "");
+        const base = past.replace(/[\u064B-\u065F\u0670]/g, "");
         stem = base.charAt(0) + "َ" + base.charAt(1) + "َ" + base.charAt(1) + "ْ";
         suffix = suffixes[index].substring(1);
       } else if (bina === "naqis") {
-        if (index === 0) { // Huwa
+        if (index === 0) {
           stem = past; suffix = '';
-        } else if (index === 1) { // Huma (L)
+        } else if (index === 1) {
           stem = past.slice(0, -1) + weakLetter + "َ"; suffix = "ا";
-        } else if (index === 2) { // Hum
+        } else if (index === 2) {
           stem = past.slice(0, -1); suffix = "َوْا";
-        } else if (index >= 5) { // Anta, Ana, etc.
+        } else if (index >= 5) {
           stem = past.slice(0, -1) + weakLetter + "ْ";
           suffix = suffixes[index].substring(1);
         } else {
           stem = past.slice(0, -1); suffix = suffixes[index];
         }
       } else if (index >= 5) {
-        // Shahih / Mithal - last root letter gets sukun
-        const cleanedPast = past.replace(/[َُِّْ]$/, "");
+        const cleanedPast = past.replace(/[\u064B-\u065F\u0670]$/, "");
         stem = cleanedPast + "ْ";
         suffix = suffixes[index].substring(1);
       } else {
-        stem = past;
-        suffix = '';
-        // For index 0, 3, 4 we handle normally
+        stem = past; suffix = '';
         if (index === 3) { stem = past.slice(0, -1); suffix = "َتْ"; }
         if (index === 4) { stem = past.slice(0, -1); suffix = "َتَا"; }
       }
@@ -155,73 +157,62 @@ export function conjugate(past: string, present: string, tense: Tense): Conjugat
       const prefixes = ['يَ', 'يَ', 'يَ', 'تَ', 'تَ', 'يَ', 'تَ', 'تَ', 'تَ', 'تَ', 'تَ', 'تَ', 'أَ', 'نَ'];
       let suffixes = ['ُ', 'انِ', 'ونَ', 'ُ', 'انِ', 'نَ', 'ُ', 'انِ', 'ونَ', 'ينَ', 'انِ', 'نَ', 'ُ', 'ُ'];
       
-      // MANSHUB & MAJZUM MODIFIERS
       if (tense === 'present_manshub') {
         suffixes = ['َ', 'ا', 'وا', 'َ', 'ا', 'نَ', 'َ', 'ا', 'وا', 'ي', 'ا', 'نَ', 'َ', 'َ'];
       } else if (tense === 'present_majzum') {
-        suffixes = ['ْ', 'ا', 'وا', 'ْ', 'ا', 'نَ', 'ْ', 'ا', 'وا', 'ي', 'ا', 'نَ', 'ْ', 'ْ'];
+        suffixes = ['ْ', 'ا', 'وا', 'ْ', 'ا', 'نَ', 'ْ', 'ا', 'وا', 'ي', 'ا', 'nَ', 'ْ', 'ْ'];
       }
 
-      const prefixText = prefixes[index];
-      let stemText = present.substring(1, present.length - 1);
+      const isMazidPresent = present.startsWith('يُ') || present.startsWith('تُ') || present.startsWith('أُ') || present.startsWith('نُ');
+      const actualPrefix = prefixes[index].replace('َ', isMazidPresent ? 'ُ' : 'َ');
       
-      // Clean prefix vowel if SDK added it
-      if (stemText.startsWith('َ') || stemText.startsWith('ُ') || stemText.startsWith('ِ')) {
-        stemText = stemText.substring(1);
-      }
-      
+      let stemText = present.replace(/^[\u0621-\u064A][\u064B-\u065F\u0670]?/, "").replace(/[\u064B-\u065F\u0670]$/, "");
       let currentSuffix = suffixes[index];
       
-      // I'LAL RULES FOR NAQIS (Weak Ending)
       if (bina === "naqis") {
         if (tense === "present_majzum" && [0, 3, 6, 12, 13].includes(index)) {
-          // Remove final weak letter but keep harakat
-          stemText = stemText.replace(/[وىاى]$/, ""); 
-          currentSuffix = ''; // Suffix is removed
+          stemText = stemText.replace(/[وىاى]$/, ""); currentSuffix = '';
         } else if (tense === "present_manshub" && [0, 3, 6, 12, 13].includes(index)) {
           if (stemText.endsWith("و") || stemText.endsWith("ي")) {
-             currentSuffix = 'َ'; // Fathah visible
+             currentSuffix = 'َ';
           } else {
-             currentSuffix = ''; // Muqaddarah for Alif Maqshurah
+             currentSuffix = '';
           }
         }
       }
 
-      result = prefixText + stemText + currentSuffix;
-      parts.push({ text: prefixText, type: 'prefix' });
+      if (bina === "ajwaf" && tense === "present_majzum" && [0, 3, 6, 12, 13].includes(index)) {
+         stemText = stemText.replace(/[وي]/, "");
+      }
+
+      result = actualPrefix + stemText + currentSuffix;
+      parts.push({ text: actualPrefix, type: 'prefix' });
       parts.push({ text: stemText, type: 'root' });
       if (currentSuffix) parts.push({ text: currentSuffix, type: 'suffix' });
 
     } else if (tense === 'future') {
-       const presentForms = conjugate(past, present, 'present');
-       const p = presentForms[index];
+       const p = conjugate(past, present, 'present')[index];
        result = 'سَـ' + p.value;
        parts.push({ text: 'سَـ', type: 'prefix' });
        parts.push(...p.parts);
 
     } else if (tense === 'imperative') {
        if (index >= 6 && index <= 11) {
-          const presentMajzum = conjugate(past, present, 'present_majzum');
-          const p = presentMajzum[index];
-          // Remove prefix (يَ/تَ/أَ/نَ) to get the stem
-          result = p.value.substring(2);
+          const p = conjugate(past, present, 'present_majzum')[index];
+          result = p.value.replace(/^[\u0621-\u064A][\u064B-\u065F\u0670]?/, "");
           
-          // Detect if the first letter of the stem has a harakat
-          // If it doesn't have fatha/damma/kasrah at index 1, it's sakin and needs Alif
-          const hasHarakat = result.length > 1 && ['َ', 'ُ', 'ِ'].includes(result.charAt(1));
-          
-          if (!hasHarakat) {
-             // Add Alif with proper harakat (simplified to Kasrah/Dammah)
-             const alifHarakat = result.includes('ُ') ? 'اُ' : 'اِ';
-             result = alifHarakat + result;
+          const hasHarakat = result.length > 1 && /[\u064B-\u064E\u0650]/.test(result.charAt(1));
+          if (!hasHarakat && !present.startsWith('يُ')) {
+             result = (result.includes('ُ') ? 'اُ' : 'اِ') + result;
           }
-
           parts.push({ text: result, type: 'root' });
        } else {
-          result = '-';
-          parts.push({ text: '-', type: 'root' });
+          result = '-'; parts.push({ text: '-', type: 'root' });
        }
     }
+
+    // FINAL SANITIZATION: Remove identical double harakats
+    result = result.replace(/([\u064B-\u0652])\1+/g, "$1");
 
     results.push({
       dhamir: d.ar,
