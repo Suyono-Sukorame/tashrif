@@ -18,6 +18,13 @@ interface HomeViewProps {
 }
 
 export const HomeView = ({ searchQuery, setSearchQuery, verbs, handleVerbSelect, setActiveTab, stats }: HomeViewProps) => {
+  const filteredVerbs = verbs.filter(v => 
+    v.past.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    v.present.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    v.root.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    v.translationId.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <motion.div
       key="home"
@@ -46,38 +53,49 @@ export const HomeView = ({ searchQuery, setSearchQuery, verbs, handleVerbSelect,
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center justify-between mb-4 px-1">
           <TextLTR className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-text-muted dark:text-slate-400" />
-            <h2 className="text-[11px] font-bold text-text-muted dark:text-slate-400 uppercase tracking-wider">Registri Kata Kerja</h2>
+            <h2 className="text-[11px] font-bold text-text-muted dark:text-slate-400 uppercase tracking-wider">Pilih Kata Kerja</h2>
           </TextLTR>
-          <Button 
-            onClick={() => {
-              const csv = "data:text/csv;charset=utf-8,ID,Root,Past,Present,Translation\n" + 
-                verbs.map(v => `${v.id},${v.root},${v.past},${v.present},${v.translationId}`).join("\n");
-              const encodedUri = encodeURI(csv);
-              const link = document.createElement("a");
-              link.setAttribute("href", encodedUri);
-              link.setAttribute("download", "tashrif_master_export.csv");
-              document.body.appendChild(link);
-              link.click();
-            }}
-            variant="ghost" 
-            className="text-[11px] font-bold text-primary dark:text-emerald-400 px-2 py-1"
-          >
-            Ekspor Data
-          </Button>
+          <div className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary-light rounded-full">{verbs.length} Kata</div>
         </div>
+
+        {/* Search Bar */}
+        <div className="relative mb-4">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
+            <Search className="w-4 h-4" />
+          </div>
+          <input 
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari arab, akar kata, atau arti..."
+            className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-dark-card border border-border dark:border-dark-border rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary/10 outline-none transition-all dark:text-dark-text shadow-sm"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-primary hover:text-primary-dark"
+            >
+              Hapus
+            </button>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 gap-2">
-          {verbs.filter(v => v.isFavorite && (v.past.includes(searchQuery) || v.translationId.includes(searchQuery))).length > 0 ? (
-            verbs.filter(v => v.isFavorite && (v.past.includes(searchQuery) || v.translationId.includes(searchQuery))).map((verb) => (
+          {filteredVerbs.length > 0 ? (
+            filteredVerbs.map((verb) => (
               <VerbCard key={verb.id} verb={verb} onClick={handleVerbSelect} />
             ))
           ) : (
-            <div className="py-10 text-center space-y-2">
-               <div className="text-3xl opacity-20">📚</div>
-               <p className="text-[11px] text-text-muted dark:text-slate-500 uppercase font-bold tracking-widest">Koleksi Masih Kosong</p>
-               <Button onClick={() => setSearchQuery('')} variant="ghost" className="text-[10px] text-primary">Cari Kata di Tashrif</Button>
+            <div className="py-12 text-center space-y-3 bg-stone-50/50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-border dark:border-dark-border">
+               <div className="text-4xl opacity-20">🔍</div>
+               <div className="space-y-1">
+                 <p className="text-[11px] text-text-dark dark:text-dark-text font-bold uppercase tracking-widest">Kata Tidak Ditemukan</p>
+                 <p className="text-[10px] text-text-muted dark:text-slate-500">Coba kata kunci lain atau periksa ejaan Anda</p>
+               </div>
+               <Button onClick={() => setSearchQuery('')} variant="ghost" className="text-[10px] text-primary">Reset Pencarian</Button>
             </div>
           )}
         </div>
