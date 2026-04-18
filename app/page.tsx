@@ -135,62 +135,74 @@ export default function TashrifApp() {
         darkMode ? "bg-dark-bg" : "bg-[#F3F4F6]"
       )}>
         <AnimatePresence mode="wait">
-          {activeTab === 'home' && (
-            <HomeView 
-              key="home"
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              verbs={verbs}
-              handleVerbSelect={handleVerbSelect}
-              setActiveTab={setActiveTab}
-              stats={stats}
+          {/* Detail View (LearnView) - Shows when a verb is selected */}
+          {selectedVerb ? (
+            <LearnView 
+              key="detail" 
+              verb={selectedVerb} 
+              onBack={() => setSelectedVerb(null)} 
+              onStartQuiz={() => startQuiz(selectedVerb)} 
             />
-          )}
+          ) : (
+            <>
+              {activeTab === 'home' && (
+                <HomeView 
+                  key="library"
+                  title="Pustaka Tashrif"
+                  icon={<Library className="w-4 h-4" />}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  verbs={verbs}
+                  handleVerbSelect={handleVerbSelect}
+                  setActiveTab={setActiveTab}
+                  stats={stats}
+                />
+              )}
 
-          {activeTab === 'learn' && (
-            selectedVerb ? (
-              <LearnView key="learn" verb={selectedVerb} onBack={() => setSelectedVerb(null)} onStartQuiz={() => startQuiz(selectedVerb)} />
-            ) : (
-              <div key="select-verb" className="space-y-4">
-                <div className="flex items-center justify-between px-1">
-                   <h2 className="text-sm font-bold uppercase tracking-widest text-text-muted dark:text-slate-400">Pilih Kata Kerja</h2>
-                </div>
-                <div className="grid grid-cols-1 gap-2">
-                   {verbs.filter(v => v.past.includes(searchQuery) || v.translationId.includes(searchQuery)).map((verb) => (
-                     <VerbCard key={verb.id} verb={verb} onClick={handleVerbSelect} />
-                   ))}
-                </div>
-              </div>
-            )
-          )}
+              {activeTab === 'learn' && (
+                <HomeView 
+                  key="collection"
+                  title="Koleksi Saya"
+                  icon={<Save className="w-4 h-4" />}
+                  showStats={false}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  verbs={verbs.filter(v => v.isFavorite)}
+                  handleVerbSelect={handleVerbSelect}
+                  setActiveTab={setActiveTab}
+                  stats={stats}
+                />
+              )}
 
-          {activeTab === 'ai' && (
-            <AIView key="ai" />
-          )}
+              {activeTab === 'ai' && (
+                <AIView key="ai" />
+              )}
 
-          {activeTab === 'guide' && (
-            <GuideView key="guide" onBack={() => setActiveTab('home')} />
-          )}
+              {activeTab === 'guide' && (
+                <GuideView key="guide" onBack={() => setActiveTab('home')} />
+              )}
 
-          {activeTab === 'quiz' && selectedVerb && (
-            <QuizView key="quiz" verb={selectedVerb} questions={quizQuestions} onComplete={() => setActiveTab('learn')} />
-          )}
+              {activeTab === 'quiz' && (
+                <div key="quiz-empty" className="h-full flex items-center justify-center text-text-muted text-[10px] uppercase font-bold">Pilih kata untuk memulai kuis</div>
+              )}
 
-          {activeTab === 'settings' && (
-            <SettingsView 
-              key="settings"
-              onBack={() => setActiveTab('home')} 
-              darkMode={darkMode}
-              setDarkMode={setDarkMode}
-            />
-          )}
+              {activeTab === 'settings' && (
+                <SettingsView 
+                  key="settings"
+                  onBack={() => setActiveTab('home')} 
+                  darkMode={darkMode}
+                  setDarkMode={setDarkMode}
+                />
+              )}
 
-          {activeTab === 'access' && (
-            <AccessView key="access" onSelectVerb={handleVerbSelect} onBack={() => setActiveTab('home')} />
-          )}
+              {activeTab === 'access' && (
+                <AccessView key="access" onSelectVerb={handleVerbSelect} onBack={() => setActiveTab('home')} />
+              )}
 
-          {activeTab === 'admin' && isAdmin && (
-            <AdminView key="admin" />
+              {activeTab === 'admin' && isAdmin && (
+                <AdminView key="admin" />
+              )}
+            </>
           )}
         </AnimatePresence>
       </main>
@@ -200,11 +212,11 @@ export default function TashrifApp() {
         "fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t px-8 py-3 flex items-center justify-between z-30 transition-colors duration-300",
         darkMode ? "bg-dark-card border-dark-border shadow-[0_-4px_12px_rgba(0,0,0,0.2)]" : "bg-white border-border shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
       )}>
-        <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={<Library />} label="Koleksi" />
-        <NavButton active={activeTab === 'learn'} onClick={() => setActiveTab('learn')} icon={<BookOpen />} label="Tashrif" />
+        <NavButton active={activeTab === 'home' && !selectedVerb} onClick={() => { setSelectedVerb(null); setActiveTab('home'); }} icon={<Library />} label="Pustaka" />
+        <NavButton active={activeTab === 'learn' && !selectedVerb} onClick={() => { setSelectedVerb(null); setActiveTab('learn'); }} icon={<BookOpen />} label="Koleksi" />
         <div className="relative -top-5">
           <button 
-             onClick={() => setActiveTab('ai')}
+             onClick={() => { setSelectedVerb(null); setActiveTab('ai'); }}
              className={cn(
                "w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all active:scale-95 border-4", 
                activeTab === 'ai' 
@@ -214,13 +226,13 @@ export default function TashrifApp() {
           >
             <Brain className="w-6 h-6" />
           </button>
-          <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-text-muted dark:text-slate-500 uppercase tracking-tighter">Mesin</span>
+          <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-text-muted dark:text-slate-500 uppercase tracking-tighter">Mesin AI</span>
         </div>
-        <NavButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings />} label="Profil" />
+        <NavButton active={activeTab === 'settings'} onClick={() => { setSelectedVerb(null); setActiveTab('settings'); }} icon={<Settings />} label="Profil" />
         {isAdmin ? (
-          <NavButton active={activeTab === 'admin'} onClick={() => setActiveTab('admin')} icon={<Save />} label="CMS" />
+          <NavButton active={activeTab === 'admin'} onClick={() => { setSelectedVerb(null); setActiveTab('admin'); }} icon={<Save />} label="CMS" />
         ) : (
-          <NavButton active={activeTab === 'access'} onClick={() => setActiveTab('access')} icon={<Zap />} label="Akses" />
+          <NavButton active={activeTab === 'access'} onClick={() => { setSelectedVerb(null); setActiveTab('access'); }} icon={<Zap />} label="Akses" />
         )}
       </nav>
     </div>
