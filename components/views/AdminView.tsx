@@ -196,7 +196,7 @@ export const AdminView = () => {
               <TextLTR as="label" className="text-[10px] font-bold text-text-muted uppercase px-1">Akar Kata (Root)</TextLTR>
               <InputRTL 
                 value={root} onChange={(e) => setRoot(e.target.value)}
-                placeholder="ف - ع - L" 
+                placeholder="ف - ع - ل" 
                 className="text-center"
               />
             </div>
